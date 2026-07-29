@@ -43,6 +43,7 @@ public sealed class VideoPlayerView : UserControl
     private readonly Slider _seek;
     private readonly Slider _volume;
     private readonly Button _playPauseButton;
+    private readonly Button _rotateButton;
     private readonly System.Windows.Shapes.Path _playIcon;
     private readonly System.Windows.Shapes.Path _pauseIcon;
     private readonly ComboBox _speedBox;
@@ -228,6 +229,8 @@ public sealed class VideoPlayerView : UserControl
         controls.Children.Add(MakeTextButton("−10s", () => SkipSeconds(-10)));
         controls.Children.Add(MakeTextButton("+10s", () => SkipSeconds(10)));
         controls.Children.Add(MakeTextButton("Fullscreen", ToggleFullscreen));
+        _rotateButton = MakeTextButton("Rotate", CycleVideoRotation);
+        controls.Children.Add(_rotateButton);
         controls.Children.Add(MakeTextButton("Subtitles…", PickSubtitleFile));
         transport.Children.Add(controls);
 
@@ -346,7 +349,7 @@ public sealed class VideoPlayerView : UserControl
 
         var hint = new TextBlock
         {
-            Text = "Space play/pause · ←/→ seek · ↑/↓ volume · F fullscreen · O open file",
+            Text = "Space play/pause · ←/→ seek · ↑/↓ volume · F fullscreen · R rotate · O open file",
             Foreground = new SolidColorBrush(Color.FromRgb(0x66, 0x70, 0x88)),
             FontSize = 11,
             Margin = new Thickness(0, 6, 0, 0),
@@ -387,6 +390,25 @@ public sealed class VideoPlayerView : UserControl
         ExitVideoFullscreen();
         _timer.Stop();
         _video.Shutdown();
+    }
+
+    private void CycleVideoRotation()
+    {
+        _video.CycleRotation();
+        if (!string.IsNullOrWhiteSpace(_currentFilePath))
+        {
+            VideoSettings.SetFileRotation(_settings, _currentFilePath, _video.RotationDegrees);
+            SaveSettings();
+        }
+
+        UpdateRotateButtonLabel();
+    }
+
+    private void UpdateRotateButtonLabel()
+    {
+        _rotateButton.Content = _video.RotationDegrees == 0
+            ? "Rotate"
+            : $"Rotate {_video.RotationDegrees}°";
     }
 
     private void PickSubtitleFile()
@@ -535,9 +557,11 @@ public sealed class VideoPlayerView : UserControl
         try
         {
             _currentFilePath = item.Path;
-            _video.Open(item.Path);
+            var rotation = VideoSettings.ResolveRotation(_settings, item.Path);
+            _video.Open(item.Path, rotation);
             _isPaused = false;
             UpdatePlayPauseIcon();
+            UpdateRotateButtonLabel();
             _nowPlaying.Text = item.Name;
             RememberRecent(item.Path);
             _queueIndex = _queue.FindIndex(q => string.Equals(q.Path, item.Path, StringComparison.OrdinalIgnoreCase));
@@ -868,6 +892,7 @@ public sealed class VideoPlayerView : UserControl
     {
         SetSeekSliderFraction(0);
         UpdateSeekUi();
+        UpdateRotateButtonLabel();
         Dispatcher.BeginInvoke(RefreshTrackPickers, DispatcherPriority.Background);
     }
 
@@ -1063,6 +1088,10 @@ public sealed class VideoPlayerView : UserControl
             case Key.P:
             case Key.B:
                 PlayPrevious();
+                e.Handled = true;
+                break;
+            case Key.R:
+                CycleVideoRotation();
                 e.Handled = true;
                 break;
             case Key.O:

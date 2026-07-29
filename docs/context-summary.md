@@ -8,6 +8,7 @@
 - **Release next:** Tag `v0.3.1` + push → CI uploads both Setup EXEs; then `.\scripts\mirror-video-hub-release.ps1` for Local-Video-Hub updater repo.
 - **Phase 4:** LibVLC **Audio** / **Subs** dropdowns in video player (when LibVLC active); refresh on media open + after loading external subtitle file.
 - **Bugfix:** Phone portrait MP4/MOV now play via LibVLC first (honors rotation metadata); MediaElement is fallback only. Subtitles button auto-switches to LibVLC when needed.
+- **Rotate:** Manual **Rotate** button cycles 0°→90°→180°→270° (keyboard **R**); LibVLC uses transform filter, MediaElement uses layout transform. Resets per file.
 
 ## 2026-07-27 — Quick polish v0.3.1 + tomorrow plan
 

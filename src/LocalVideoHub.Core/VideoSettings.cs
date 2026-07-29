@@ -18,6 +18,7 @@ internal sealed class VideoSettingsData
     public double Speed { get; set; } = 1.0;
     public string RepeatMode { get; set; } = "off";
     public List<string> RecentFiles { get; set; } = [];
+    public Dictionary<string, int> FileRotations { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 internal static class VideoSettings
@@ -66,12 +67,60 @@ internal static class VideoSettings
         try
         {
             Directory.CreateDirectory(SettingsDir);
+            NormalizeRotationKeys(data);
             File.WriteAllText(SettingsPath, JsonSerializer.Serialize(data, JsonOptions));
         }
         catch
         {
             /* ignore */
         }
+    }
+
+    public static string NormalizeFileKey(string path) =>
+        Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+    public static int ResolveRotation(VideoSettingsData data, string path)
+    {
+        var key = NormalizeFileKey(path);
+        if (data.FileRotations.TryGetValue(key, out var saved))
+            return NormalizeStep(saved);
+
+        return NormalizeStep(VideoRotationMetadata.TryGetCorrectionDegrees(path));
+    }
+
+    public static void SetFileRotation(VideoSettingsData data, string path, int degrees)
+    {
+        data.FileRotations[NormalizeFileKey(path)] = NormalizeStep(degrees);
+    }
+
+    private static int NormalizeStep(int degrees)
+    {
+        var step = ((degrees % 360) + 360) % 360;
+        return step switch
+        {
+            90 or 180 or 270 => step,
+            _ => 0,
+        };
+    }
+
+    private static void NormalizeRotationKeys(VideoSettingsData data)
+    {
+        if (data.FileRotations.Count == 0)
+            return;
+
+        var merged = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (path, degrees) in data.FileRotations)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                continue;
+
+            var key = NormalizeFileKey(path);
+            var step = NormalizeStep(degrees);
+            if (step != 0)
+                merged[key] = step;
+        }
+
+        data.FileRotations = merged;
     }
 
     public static VideoRepeatMode ParseRepeat(string? value) =>

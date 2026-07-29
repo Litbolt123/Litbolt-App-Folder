@@ -36,7 +36,7 @@ try {
     $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
     $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
     $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
-    $g.Clear([System.Drawing.Color]::Transparent)
+    $g.Clear([System.Drawing.Color]::FromArgb(255, 13, 15, 20))
     $g.DrawImage($src, 0, 0, $size, $size)
     $g.Dispose()
 

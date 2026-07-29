@@ -12,6 +12,7 @@
     <ProjectReference Include="..\Litbolt.Shell\Litbolt.Shell.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MetadataExtractor" Version="2.8.1" />
     <PackageReference Include="LibVLCSharp" Version="3.9.0" />
     <PackageReference Include="LibVLCSharp.WPF" Version="3.9.0" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21">

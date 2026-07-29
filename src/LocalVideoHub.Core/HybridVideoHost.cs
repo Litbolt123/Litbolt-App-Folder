@@ -20,6 +20,7 @@ internal sealed class HybridVideoHost : UserControl
     private VideoBackend _backend = VideoBackend.MediaElement;
     private string? _currentPath;
     private bool _triedMediaElementFallback;
+    private int _rotationDegrees;
     private double _volume = 0.8;
     private double _speed = 1.0;
 
@@ -32,6 +33,8 @@ internal sealed class HybridVideoHost : UserControl
             UnloadedBehavior = MediaState.Manual,
             Stretch = Stretch.Uniform,
             ScrubbingEnabled = true,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
         };
         _mediaElement.MediaOpened += (_, e) => MediaOpened?.Invoke(this, e);
         _mediaElement.MediaEnded += (_, e) => MediaEnded?.Invoke(this, e);
@@ -42,12 +45,21 @@ internal sealed class HybridVideoHost : UserControl
         if (LibVlcBootstrap.Instance is { } libVlc)
         {
             _vlcPlayer = new VlcMediaPlayer(libVlc);
-            _vlcView = new VideoView { MediaPlayer = _vlcPlayer };
+            _vlcView = new VideoView
+            {
+                MediaPlayer = _vlcPlayer,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+            };
             _vlcView.Visibility = Visibility.Collapsed;
             _vlcPlayer.EndReached += (_, _) =>
                 Dispatcher.BeginInvoke(() => MediaEnded?.Invoke(this, new RoutedEventArgs()));
             _vlcPlayer.Playing += (_, _) =>
-                Dispatcher.BeginInvoke(() => MediaOpened?.Invoke(this, new RoutedEventArgs()));
+                Dispatcher.BeginInvoke(() =>
+                {
+                    UpdateVlcAspectRatio();
+                    MediaOpened?.Invoke(this, new RoutedEventArgs());
+                });
             _vlcPlayer.EncounteredError += (_, _) =>
                 Dispatcher.BeginInvoke(() =>
                 {
@@ -155,6 +167,8 @@ internal sealed class HybridVideoHost : UserControl
 
     public bool LibVlcAvailable => _vlcPlayer is not null;
 
+    public int RotationDegrees => _rotationDegrees;
+
     public event RoutedEventHandler? MediaOpened;
     public event RoutedEventHandler? MediaEnded;
     public event EventHandler<Exception?>? MediaFailed;
@@ -162,14 +176,33 @@ internal sealed class HybridVideoHost : UserControl
 
     public bool HasSource => !string.IsNullOrWhiteSpace(_currentPath);
 
-    public void Open(string path)
+    public void Open(string path, int rotationDegrees = 0)
     {
+        _rotationDegrees = NormalizeRotation(rotationDegrees);
         _currentPath = path;
         _triedMediaElementFallback = false;
         if (_vlcPlayer is not null)
             OpenLibVlc(path);
         else
             OpenMediaElement(path);
+    }
+
+    public void SetRotation(int rotationDegrees, bool preservePlayback = true)
+    {
+        if (!HasSource)
+            return;
+
+        _rotationDegrees = NormalizeRotation(rotationDegrees);
+        ApplyRotation(preservePlayback);
+    }
+
+    public void CycleRotation()
+    {
+        if (!HasSource)
+            return;
+
+        _rotationDegrees = (_rotationDegrees + 90) % 360;
+        ApplyRotation(preservePlayback: true);
     }
 
     public void Play()
@@ -287,11 +320,12 @@ internal sealed class HybridVideoHost : UserControl
     private void OpenMediaElement(string path)
     {
         SwitchBackend(VideoBackend.MediaElement);
+        ApplyMediaElementRotation();
         _mediaElement.Source = new Uri(path);
         _mediaElement.Play();
     }
 
-    private void OpenLibVlc(string path)
+    private void OpenLibVlc(string path, TimeSpan? resumePosition = null, bool autoPlay = true)
     {
         if (_vlcPlayer is null)
             return;
@@ -301,9 +335,80 @@ internal sealed class HybridVideoHost : UserControl
         _vlcPlayer.Media?.Dispose();
 
         var media = new Media(LibVlcBootstrap.Instance!, path, FromType.FromPath);
+        media.AddOption(":no-autorotate");
+        ApplyRotationToMedia(media);
         TryAttachSubtitle(media, path);
         _vlcPlayer.Media = media;
         _vlcPlayer.Play();
+
+        if (resumePosition is { } resume)
+        {
+            _vlcPlayer.Time = (long)Math.Max(0, resume.TotalMilliseconds);
+            if (!autoPlay)
+                _vlcPlayer.Pause();
+        }
+    }
+
+    private void ApplyRotation(bool preservePlayback)
+    {
+        if (_backend == VideoBackend.MediaElement)
+        {
+            ApplyMediaElementRotation();
+            return;
+        }
+
+        if (_backend != VideoBackend.LibVlc || string.IsNullOrWhiteSpace(_currentPath))
+            return;
+
+        var resume = preservePlayback ? Position : TimeSpan.Zero;
+        var playing = preservePlayback && _vlcPlayer is { IsPlaying: true };
+        OpenLibVlc(_currentPath, resume, playing);
+    }
+
+    private void ApplyMediaElementRotation()
+    {
+        _mediaElement.LayoutTransform = _rotationDegrees == 0
+            ? Transform.Identity
+            : new RotateTransform(_rotationDegrees);
+    }
+
+    private void ApplyRotationToMedia(Media media)
+    {
+        if (_rotationDegrees == 0)
+            return;
+
+        media.AddOption(":video-filter=transform");
+        media.AddOption($":transform-type={_rotationDegrees}");
+    }
+
+    private void UpdateVlcAspectRatio()
+    {
+        if (_vlcPlayer is null || _backend != VideoBackend.LibVlc)
+            return;
+
+        uint width = 0;
+        uint height = 0;
+        _vlcPlayer.Size(0, ref width, ref height);
+        if (width == 0 || height == 0)
+        {
+            _vlcPlayer.AspectRatio = null;
+            return;
+        }
+
+        if (_rotationDegrees is 90 or 270)
+            (width, height) = (height, width);
+
+        _vlcPlayer.AspectRatio = $"{width}:{height}";
+    }
+
+    private static int NormalizeRotation(int degrees)
+    {
+        var step = ((degrees % 360) + 360) % 360;
+        return step switch
+        {
+            90 or 180 or 270 => step,
+            _ => 0,
+        };
     }
 
     private static void TryAttachSubtitle(Media media, string videoPath)
