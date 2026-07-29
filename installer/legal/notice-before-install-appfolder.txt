@@ -1,0 +1,9 @@
+Litbolt's App Folder — before you install
+
+This installer places Litbolt's App Folder under your user profile
+(%LocalAppData%\Programs\LitboltAppFolder). Admin rights are not required.
+
+The app hosts embedded panels for Local Music Hub, Local Video Hub, and
+YouTube Downloader. You can pop tabs out or launch sibling apps if installed.
+
+You can create a desktop shortcut on the next screens if you want one.

@@ -1,0 +1,12 @@
+Litbolt desktop apps — license and terms (summary)
+
+This software is provided by Litbolt for personal use on your Windows PC.
+
+By installing, you agree to use the app lawfully and accept that the
+software is provided "as is" without warranty. You are responsible for
+content you play, download, or manage with these tools.
+
+Third-party components (including LibVLC, SQLite, and .NET) are subject to
+their own licenses.
+
+If you do not agree, cancel setup and do not install.

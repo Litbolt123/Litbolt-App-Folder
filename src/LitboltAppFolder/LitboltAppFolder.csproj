@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>LitboltAppFolder</RootNamespace>
+    <AssemblyName>LitboltAppFolder</AssemblyName>
+    <Product>Litbolt's App Folder</Product>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="app.ico" />
+    <None Include="Assets\icon-source.png" CopyToOutputDirectory="Never" />
+    <Content Include="app.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Litbolt.Shell\Litbolt.Shell.csproj" />
+    <ProjectReference Include="..\LocalVideoHub.Core\LocalVideoHub.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.11" />
+  </ItemGroup>
+  <PropertyGroup>
+    <UpdateWindowsShortcuts Condition="'$(UpdateWindowsShortcuts)' == ''">true</UpdateWindowsShortcuts>
+  </PropertyGroup>
+  <Target Name="UpdateWindowsShortcutsAfterBuild" AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Release' and '$(UpdateWindowsShortcuts)' == 'true' and '$(GITHUB_ACTIONS)' != 'true'">
+    <PropertyGroup>
+      <_ShortcutSourceDir>$([System.String]::Copy('$(TargetDir)').TrimEnd('\'))</_ShortcutSourceDir>
+    </PropertyGroup>
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\..\scripts\update-windows-shortcuts.ps1&quot; -SourceDir &quot;$(_ShortcutSourceDir)&quot; -AppName &quot;Litbolt's App Folder&quot; -ExeName &quot;LitboltAppFolder.exe&quot; -ProgramsFolder &quot;LitboltAppFolder&quot; -SkipProcessStop"
+          IgnoreExitCode="true" />
+  </Target>
+</Project>

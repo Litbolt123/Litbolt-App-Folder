@@ -1,0 +1,40 @@
+<Window x:Class="LocalVideoHub.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings — Local Video Hub"
+        Width="500" Height="380"
+        Background="#0E1016"
+        WindowStartupLocation="CenterOwner">
+  <DockPanel Margin="20">
+    <Button DockPanel.Dock="Bottom" Content="Close" Padding="16,8" HorizontalAlignment="Right"
+            IsCancel="True" Background="#2A3348" Foreground="White" BorderThickness="0" Margin="0,16,0,0"/>
+    <ScrollViewer>
+      <StackPanel>
+        <TextBlock Text="Updates (GitHub)" FontSize="18" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,8"/>
+        <CheckBox x:Name="AutoCheckBox" Content="Check for updates when Video Hub starts"
+                  Foreground="White" Margin="0,0,0,16"/>
+
+        <TextBlock Text="System tray" FontSize="18" FontWeight="SemiBold" Foreground="White" Margin="0,0,0,8"/>
+        <CheckBox x:Name="MinimizeToTrayBox" Content="Close to system tray (keep running in background)"
+                  Foreground="White" Margin="0,0,0,8"/>
+        <CheckBox x:Name="StartWithWindowsBox" Content="Start with Windows (opens in system tray)"
+                  Foreground="White" Margin="0,0,0,20"/>
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+          <Button Content="Check for updates…" Padding="12,8" Margin="0,0,8,0"
+                  Background="#5B8CFF" Foreground="White" BorderThickness="0"
+                  Click="CheckUpdates_OnClick"/>
+          <Button Content="Open Releases page" Padding="12,8"
+                  Background="#2A3348" Foreground="White" BorderThickness="0"
+                  Click="OpenReleases_OnClick"/>
+        </StackPanel>
+        <TextBlock x:Name="StatusText" TextWrapping="Wrap" Foreground="#8890A0" Margin="0,0,0,12"/>
+        <StackPanel x:Name="InstallerPanel" Visibility="Collapsed">
+          <Button Content="Download and run installer…" Padding="12,8" HorizontalAlignment="Left"
+                  Background="#1DB954" Foreground="White" BorderThickness="0"
+                  Click="DownloadInstaller_OnClick"/>
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

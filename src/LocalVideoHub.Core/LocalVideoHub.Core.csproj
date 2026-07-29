@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>LocalVideoHub</RootNamespace>
+    <AssemblyName>LocalVideoHub.Core</AssemblyName>
+    <Product>Local Video Hub</Product>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Litbolt.Shell\Litbolt.Shell.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="LibVLCSharp" Version="3.9.0" />
+    <PackageReference Include="LibVLCSharp.WPF" Version="3.9.0" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.21">
+      <ExcludeAssets>buildTransitive</ExcludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

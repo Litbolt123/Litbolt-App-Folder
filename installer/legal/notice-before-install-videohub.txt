@@ -1,0 +1,9 @@
+Local Video Hub — before you install
+
+This installer places Local Video Hub under your user profile
+(%LocalAppData%\Programs\LocalVideoHub). Admin rights are not required.
+
+The app plays local video files (MP4, MKV, WebM, and more) using Windows
+Media Foundation with LibVLC fallback for additional codecs.
+
+You can create a desktop shortcut on the next screens if you want one.

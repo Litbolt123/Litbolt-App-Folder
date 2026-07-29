@@ -1,0 +1,10 @@
+Litbolt apps — after install
+
+Your app is installed under your user profile. Start Menu shortcuts were
+created; a desktop shortcut is optional.
+
+Updates: use Settings → Updates in the app, or download a newer Setup EXE
+from GitHub Releases when available.
+
+Data (settings, recent files) lives under %LocalAppData% — not beside the
+program files. Uninstalling the app does not delete your data folder.

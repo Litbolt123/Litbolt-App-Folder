@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <Version>0.3.1</Version>
+    <AssemblyVersion>0.3.1.0</AssemblyVersion>
+    <FileVersion>0.3.1.0</FileVersion>
+    <Company>Litbolt</Company>
+    <Authors>Litbolt</Authors>
+    <Product>Litbolt's App Folder</Product>
+    <Copyright>Copyright © Litbolt</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+  </PropertyGroup>
+</Project>
