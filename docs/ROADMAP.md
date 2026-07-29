@@ -35,7 +35,7 @@ Phases for the hub + embedded apps. ✅ = shipped in current builds.
 - [x] Auto-fallback to LibVLC when MediaElement fails
 - [x] Subtitles: auto-detect `.srt`/`.vtt`/`.ass` beside video; **Subtitles…** picker
 - [x] MediaElement fallback when LibVLC unavailable
-- [x] LibVLC audio track / subtitle track picker UI ✅ v0.3.2-prep
+- [x] LibVLC-first playback for correct phone portrait orientation (MediaElement fallback) ✅ v0.3.1
 - [ ] Hardware decode tuning (later)
 
 ## Phase 5 — Full UI embed (later)
