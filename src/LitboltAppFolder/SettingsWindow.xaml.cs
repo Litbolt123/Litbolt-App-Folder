@@ -23,6 +23,7 @@ public partial class SettingsWindow
         StartWithWindowsBox.IsChecked = settings.StartWithWindows;
         MusicPathBox.Text = settings.MusicHubExePath ?? "";
         VideoPathBox.Text = settings.VideoHubExePath ?? "";
+        PhotoPathBox.Text = settings.PhotoHubExePath ?? "";
         DownloaderPathBox.Text = settings.DownloaderExePath ?? "";
         StatusText.Text = string.IsNullOrWhiteSpace(settings.LastUpdateCheckUtc)
             ? $"Installed v{GitHubUpdateClient.CurrentAssemblyVersion.ToString(3)} · never checked"
@@ -37,6 +38,7 @@ public partial class SettingsWindow
         _settings.StartWithWindows = StartWithWindowsBox.IsChecked == true;
         _settings.MusicHubExePath = NullIfBlank(MusicPathBox.Text);
         _settings.VideoHubExePath = NullIfBlank(VideoPathBox.Text);
+        _settings.PhotoHubExePath = NullIfBlank(PhotoPathBox.Text);
         _settings.DownloaderExePath = NullIfBlank(DownloaderPathBox.Text);
         FolderSettingsStore.Save(_settings);
 
@@ -53,6 +55,9 @@ public partial class SettingsWindow
 
     private void BrowseVideo_OnClick(object sender, RoutedEventArgs e) =>
         BrowseExe(VideoPathBox, AppExePaths.DefaultVideoHubExe());
+
+    private void BrowsePhoto_OnClick(object sender, RoutedEventArgs e) =>
+        BrowseExe(PhotoPathBox, AppExePaths.DefaultPhotoHubExe());
 
     private void BrowseDownloader_OnClick(object sender, RoutedEventArgs e) =>
         BrowseExe(DownloaderPathBox, AppExePaths.DefaultDownloaderExe());

@@ -169,6 +169,7 @@ public partial class MainWindow : ITrayHost
         _modules.Add(new HomeModule(OpenModule));
         _modules.Add(new MusicHubModule(_settings, () => AppExePaths.ResolveMusicHub(_settings)));
         _modules.Add(new VideoAppModule());
+        _modules.Add(new PhotoHubModule(() => AppExePaths.ResolvePhotoHub(_settings)));
         _modules.Add(new DownloaderModule(() => AppExePaths.ResolveDownloader(_settings)));
     }
 
@@ -239,6 +240,7 @@ public partial class MainWindow : ITrayHost
             KnownModuleIds.Music => AppExePaths.ResolveMusicHub(_settings),
             KnownModuleIds.Downloader => AppExePaths.ResolveDownloader(_settings),
             KnownModuleIds.Video => AppExePaths.ResolveVideoHub(_settings) ?? module.StandaloneExePath,
+            KnownModuleIds.Photo => AppExePaths.ResolvePhotoHub(_settings) ?? module.StandaloneExePath,
             _ => module.StandaloneExePath,
         };
 
@@ -449,6 +451,7 @@ internal sealed class HomeModule : IAppModule
         var grid = new UniformGrid { Columns = 2 };
         grid.Children.Add(Card("Music", "Playlists & playback control", KnownModuleIds.Music, Color.FromRgb(0x1D, 0xB9, 0x54)));
         grid.Children.Add(Card("Local Video Hub", "Full video player", KnownModuleIds.Video, Color.FromRgb(0x5B, 0x8C, 0xFF)));
+        grid.Children.Add(Card("Photo Hub", "Face sort & Rainmeter widget", KnownModuleIds.Photo, Color.FromRgb(0xE8, 0xA0, 0x4A)));
         grid.Children.Add(Card("Downloader", "Queue YouTube downloads", KnownModuleIds.Downloader, Color.FromRgb(0xFF, 0x5A, 0x5A)));
         stack.Children.Add(grid);
         root.Content = stack;

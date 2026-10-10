@@ -15,6 +15,9 @@ public static class AppExePaths
     public static string DefaultVideoHubExe() =>
         Path.Combine(AppPathResolver.LocalAppPrograms, "LocalVideoHub", "LocalVideoHub.exe");
 
+    public static string DefaultPhotoHubExe() =>
+        Path.Combine(AppPathResolver.LocalAppPrograms, "PhotoHub", "PhotoHub.exe");
+
     public static string? ResolveMusicHub(FolderSettings settings) =>
         FirstExisting(
             settings.MusicHubExePath,
@@ -40,6 +43,15 @@ public static class AppExePaths
                 "LocalVideoHub.exe",
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "LocalVideoHub.exe"),
                 AppPathResolver.FindInstalledExe("LitboltVideo", "LitboltVideo.exe") ?? ""));
+
+    public static string? ResolvePhotoHub(FolderSettings settings) =>
+        FirstExisting(
+            settings.PhotoHubExePath,
+            DefaultPhotoHubExe(),
+            AppPathResolver.FindBesideOrInstalled(
+                "PhotoHub",
+                "PhotoHub.exe",
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Photo Hub", "PhotoHub.exe")));
 
     private static string? FirstExisting(params string?[] candidates)
     {

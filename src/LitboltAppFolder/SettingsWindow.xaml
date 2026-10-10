@@ -35,6 +35,15 @@
                    BorderBrush="#2A3040"/>
         </DockPanel>
 
+        <TextBlock Text="Photo Hub" Foreground="#8890A0" Margin="0,0,0,4"/>
+        <DockPanel Margin="0,0,0,12">
+          <Button Content="Browse…" DockPanel.Dock="Right" Padding="10,6" Margin="8,0,0,0"
+                  Background="#2A3348" Foreground="White" BorderThickness="0"
+                  Click="BrowsePhoto_OnClick"/>
+          <TextBox x:Name="PhotoPathBox" Padding="8,6" Background="#1A1E28" Foreground="White"
+                   BorderBrush="#2A3040"/>
+        </DockPanel>
+
         <TextBlock Text="YouTube Downloader" Foreground="#8890A0" Margin="0,0,0,4"/>
         <DockPanel Margin="0,0,0,20">
           <Button Content="Browse…" DockPanel.Dock="Right" Padding="10,6" Margin="8,0,0,0"

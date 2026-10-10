@@ -8,7 +8,7 @@
     <RootNamespace>PhotoHub</RootNamespace>
     <AssemblyName>PhotoHub</AssemblyName>
     <Product>Photo Hub</Product>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>

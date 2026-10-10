@@ -1,3 +1,13 @@
+## 2026-10-10 — Photo Hub (Litbolt app set)
+
+- **User:** Build Photo Hub WPF (.NET 8) for face sort / people / Rainmeter widget; place under `Photo Hub/`; match Litbolt App Folder styling, shortcuts, launcher pattern.
+- **Done:** New `Photo Hub/PhotoHub.csproj` (Litbolt.Shell tray/single-instance, dark UI like Local Video Hub, Release → `%LocalAppData%\Programs\PhotoHub\` + Start Menu shortcut via shared `scripts/update-windows-shortcuts.ps1`). Python orchestrator `Pictures\_sort-tools\photo_hub\sort_inbox.py` reuses `audit2.detect` + strict thresholds (0.80/48/0.62/0.08). Wired into solution + App Folder nav (`PhotoHubModule`, settings EXE override). README in `Photo Hub/README.md`.
+
+## 2026-10-10 — Photo Hub 0.2 (widget refresh, iPhone, undo)
+
+- **User:** Both widget refresh buttons (backup + People); full widget tab; iPhone tab; find + undo COPY with hash match; commit per step; no Desktop shortcut.
+- **Done:** `WidgetRefreshService`, Photos tab, expanded Widget tab (excludes, illustro, sliders). iPhone tab + `--photo-hub-cli sync` in iPhone Photo Sync. Find tab + Undo tab (`FoldLogUndoService` SHA-256 gate on COPY). v0.2.0 README numbered flow.
+
 ## 2026-07-28 — Distribution installers + Phase 4 track pickers
 
 - **User:** Confirm Start Menu/shortcuts updated; continue roadmap phases.
@@ -8,7 +18,8 @@
 - **Release next:** Tag `v0.3.1` + push → CI uploads both Setup EXEs; then `.\scripts\mirror-video-hub-release.ps1` for Local-Video-Hub updater repo.
 - **Phase 4:** LibVLC **Audio** / **Subs** dropdowns in video player (when LibVLC active); refresh on media open + after loading external subtitle file.
 - **Bugfix:** Phone portrait MP4/MOV now play via LibVLC first (honors rotation metadata); MediaElement is fallback only. Subtitles button auto-switches to LibVLC when needed.
-- **Rotate:** Manual **Rotate** button cycles 0°→90°→180°→270° (keyboard **R**); LibVLC uses transform filter, MediaElement uses layout transform. Resets per file.
+- **Rotate:** Manual **Rotate** button cycles 0°→90°→180°→270° (keyboard **R**); saved per file in `settings.json` → `fileRotations`. Auto-reads QuickTime/MOV rotation metadata on first open (e.g. portrait phone clips).
+- **Icons:** Regenerated `app.ico` for both apps — black rounded edges, no white corner artifacts (`scripts/compose-app-icon.ps1`).
 
 ## 2026-07-27 — Quick polish v0.3.1 + tomorrow plan
 
