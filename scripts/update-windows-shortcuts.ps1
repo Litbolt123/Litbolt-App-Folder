@@ -3,7 +3,8 @@ param(
   [Parameter(Mandatory = $true)][string]$AppName,
   [Parameter(Mandatory = $true)][string]$ExeName,
   [Parameter(Mandatory = $true)][string]$ProgramsFolder,
-  [switch]$SkipProcessStop
+  [switch]$SkipProcessStop,
+  [switch]$SkipDesktop
 )
 
 $ErrorActionPreference = "Stop"
@@ -56,6 +57,14 @@ function Set-Shortcut([string]$path) {
 $startDir = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
 New-Item -ItemType Directory -Force -Path $startDir | Out-Null
 Set-Shortcut (Join-Path $startDir "$AppName.lnk")
-Set-Shortcut (Join-Path ([Environment]::GetFolderPath("Desktop")) "$AppName.lnk")
+if (-not $SkipDesktop) {
+  Set-Shortcut (Join-Path ([Environment]::GetFolderPath("Desktop")) "$AppName.lnk")
+} else {
+  $desktopLnk = Join-Path ([Environment]::GetFolderPath("Desktop")) "$AppName.lnk"
+  if (Test-Path $desktopLnk) {
+    Remove-Item -LiteralPath $desktopLnk -Force
+    Write-Host "  Removed desktop shortcut: $desktopLnk"
+  }
+}
 
 Write-Host "Done. Shortcuts now launch: $exe"

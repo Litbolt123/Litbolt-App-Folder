@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>PhotoHub</RootNamespace>
+    <AssemblyName>PhotoHub</AssemblyName>
+    <Product>Photo Hub</Product>
+    <Version>0.1.0</Version>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="app.ico" />
+    <Content Include="app.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\Litbolt.Shell\Litbolt.Shell.csproj" />
+  </ItemGroup>
+  <PropertyGroup>
+    <UpdateWindowsShortcuts Condition="'$(UpdateWindowsShortcuts)' == ''">true</UpdateWindowsShortcuts>
+  </PropertyGroup>
+  <Target Name="UpdateWindowsShortcutsAfterBuild" AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Release' and '$(UpdateWindowsShortcuts)' == 'true' and '$(GITHUB_ACTIONS)' != 'true'">
+    <PropertyGroup>
+      <_ShortcutSourceDir>$([System.String]::Copy('$(TargetDir)').TrimEnd('\'))</_ShortcutSourceDir>
+    </PropertyGroup>
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\..\scripts\update-windows-shortcuts.ps1&quot; -SourceDir &quot;$(_ShortcutSourceDir)&quot; -AppName &quot;Photo Hub&quot; -ExeName &quot;PhotoHub.exe&quot; -ProgramsFolder &quot;PhotoHub&quot; -SkipProcessStop -SkipDesktop"
+          IgnoreExitCode="true" />
+  </Target>
+  <ItemGroup>
+    <None Include="scripts\*.ps1" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
