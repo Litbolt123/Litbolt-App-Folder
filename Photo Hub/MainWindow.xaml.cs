@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media.Imaging;
 using Litbolt.Shell;
 using Litbolt.Shell.Tray;
@@ -15,8 +16,8 @@ public partial class MainWindow : Window, ITrayHost
 {
     private readonly ProcessRunner _runner = new();
     private readonly FeaturedPeopleService _featured = new();
-    private readonly Dictionary<string, CheckBox> _peopleChecks = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, CheckBox> _pairChecks = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ToggleButton> _peopleChecks = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ToggleButton> _pairChecks = new(StringComparer.Ordinal);
     private CancellationTokenSource? _sortCts;
     private readonly AppTrayIcon _tray;
     private readonly ActivateSignalWatcher _activateWatcher;
@@ -53,20 +54,24 @@ public partial class MainWindow : Window, ITrayHost
             InitWidgetAndPhotos();
             UpdateBackupStatus();
             RefreshUndoList_OnClick(this, new RoutedEventArgs());
-        };
-        MainTabs.SelectionChanged += (_, _) =>
-        {
-            if (MainTabs.SelectedItem == PeopleTab)
-                RefreshPeople();
-            if (MainTabs.SelectedItem == WidgetTab)
+            InitNavigationUi();
+            var args = Environment.GetCommandLineArgs();
+            var capIdx = Array.IndexOf(args, "--capture-ui");
+            if (capIdx >= 0 && capIdx + 1 < args.Length)
             {
-                BuildWidgetChecks();
-                RefreshExcludeList();
+                var outDir = args[capIdx + 1];
+                var capTimer = new System.Windows.Threading.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(1200),
+                };
+                capTimer.Tick += (_, _) =>
+                {
+                    capTimer.Stop();
+                    CaptureUiScreenshots(outDir);
+                    Application.Current.Shutdown();
+                };
+                capTimer.Start();
             }
-            if (MainTabs.SelectedItem == IPhoneTab)
-                UpdateBackupStatus();
-            if (MainTabs.SelectedItem == UndoTab)
-                RefreshUndoList_OnClick(this, new RoutedEventArgs());
         };
     }
 
@@ -108,6 +113,10 @@ public partial class MainWindow : Window, ITrayHost
                         {
                             SortProgress.Value = pct;
                             SortProgressText.Text = $"{cur} / {tot}";
+                            GlobalProgress.Value = pct;
+                            GlobalProgress.Visibility = pct > 0 && pct < 100
+                                ? Visibility.Visible
+                                : Visibility.Collapsed;
                         });
                         return;
                     case "match":
@@ -127,7 +136,12 @@ public partial class MainWindow : Window, ITrayHost
                         return;
                     case "done":
                         AppendLog($"Done. Copied matches for {root.GetProperty("copied").GetInt32()} faces; {root.GetProperty("unknown_faces").GetInt32()} unknown.");
-                        Dispatcher.Invoke(() => { SortProgress.Value = 100; RunSortBtn.IsEnabled = true; });
+                        Dispatcher.Invoke(() =>
+                        {
+                            SortProgress.Value = 100;
+                            GlobalProgress.Visibility = Visibility.Collapsed;
+                            RunSortBtn.IsEnabled = true;
+                        });
                         return;
                     case "error":
                         AppendLog(root.GetProperty("message").GetString() ?? "Unknown error", true);
@@ -216,12 +230,49 @@ public partial class MainWindow : Window, ITrayHost
 
     private void RefreshPeople()
     {
-        PeopleList.ItemsSource = FaceGroupsService.ListPeople();
+        var people = FaceGroupsService.ListPeople();
+        PeopleList.ItemsSource = people;
+        PeopleGrid.Children.Clear();
+        foreach (var person in people)
+        {
+            PeopleGrid.Children.Add(UiControls.CreatePeopleGridCard(
+                person,
+                p => SelectPerson(p),
+                p => RenamePersonFor(p),
+                p => MergePersonFor(p)));
+        }
+    }
+
+    private void SelectPerson(PersonFolder person)
+    {
+        _selectedPerson = person;
+        foreach (var child in PeopleGrid.Children)
+        {
+            if (child is Border b)
+            {
+                b.BorderBrush = b.Tag is PersonFolder pf && pf.Path == person.Path
+                    ? new System.Windows.Media.SolidColorBrush(LitboltTheme.Accent)
+                    : new System.Windows.Media.SolidColorBrush(LitboltTheme.ButtonBg);
+            }
+        }
+    }
+
+    private void RenamePersonFor(PersonFolder person)
+    {
+        _selectedPerson = person;
+        RenamePerson_OnClick(this, new RoutedEventArgs());
+    }
+
+    private void MergePersonFor(PersonFolder person)
+    {
+        _selectedPerson = person;
+        MergePerson_OnClick(this, new RoutedEventArgs());
     }
 
     private void RenamePerson_OnClick(object sender, RoutedEventArgs e)
     {
-        if (PeopleList.SelectedItem is not PersonFolder person)
+        var person = _selectedPerson ?? PeopleList.SelectedItem as PersonFolder;
+        if (person is null)
         {
             MessageBox.Show("Select a person folder first.", "Photo Hub", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
@@ -240,6 +291,7 @@ public partial class MainWindow : Window, ITrayHost
         {
             FaceGroupsService.RenamePerson(person.Path, dlg.Value);
             AppendLog($"Renamed {person.Name} → {dlg.Value}");
+            ShowToast($"Renamed to {dlg.Value}");
             RefreshPeople();
             BuildWidgetChecks();
         }
@@ -251,7 +303,8 @@ public partial class MainWindow : Window, ITrayHost
 
     private void MergePerson_OnClick(object sender, RoutedEventArgs e)
     {
-        if (PeopleList.SelectedItem is not PersonFolder from)
+        var from = _selectedPerson ?? PeopleList.SelectedItem as PersonFolder;
+        if (from is null)
         {
             MessageBox.Show("Select the folder to merge away.", "Photo Hub", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
@@ -272,6 +325,7 @@ public partial class MainWindow : Window, ITrayHost
         {
             FaceGroupsService.MergePeople(from.Path, into.Path);
             AppendLog($"Merged {from.Name} into {into.Name} (copies only).");
+            ShowToast($"Merged into {into.Name}");
             RefreshPeople();
         }
         catch (Exception ex)
@@ -282,39 +336,29 @@ public partial class MainWindow : Window, ITrayHost
 
     private void BuildWidgetChecks()
     {
-        var people = FaceGroupsService.ListPeople().Select(p => p.Name).ToList();
+        var people = FaceGroupsService.ListPeople();
         var enabled = _featured.EnabledPeople();
         var pairsOn = _featured.EnabledPairs();
 
-        WidgetPeopleChecks.Items.Clear();
+        WidgetPeopleChecks.Children.Clear();
         _peopleChecks.Clear();
-        foreach (var name in people)
+        foreach (var person in people)
         {
-            var cb = new CheckBox
-            {
-                Content = name,
-                IsChecked = enabled.Contains(name),
-                Foreground = System.Windows.Media.Brushes.White,
-                Margin = new Thickness(0, 4, 16, 4),
-            };
-            _peopleChecks[name] = cb;
-            WidgetPeopleChecks.Items.Add(cb);
+            var chip = UiControls.CreatePersonChip(person.Name, person.ThumbnailPath, enabled.Contains(person.Name), out var toggle);
+            _peopleChecks[person.Name] = toggle;
+            WidgetPeopleChecks.Children.Add(chip);
         }
 
-        WidgetPairChecks.Items.Clear();
+        WidgetPairChecks.Children.Clear();
         _pairChecks.Clear();
-        foreach (var other in people.Where(p => !string.Equals(p, PhotoPaths.AugustPerson, StringComparison.Ordinal)))
+        var byName = people.ToDictionary(p => p.Name, StringComparer.Ordinal);
+        foreach (var other in people.Where(p => !string.Equals(p.Name, PhotoPaths.AugustPerson, StringComparison.Ordinal)))
         {
-            var key = $"{PhotoPaths.AugustPerson} + {other}";
-            var cb = new CheckBox
-            {
-                Content = key,
-                IsChecked = pairsOn.Contains(key),
-                Foreground = System.Windows.Media.Brushes.White,
-                Margin = new Thickness(0, 4, 16, 4),
-            };
-            _pairChecks[key] = cb;
-            WidgetPairChecks.Items.Add(cb);
+            var key = $"{PhotoPaths.AugustPerson} + {other.Name}";
+            byName.TryGetValue(PhotoPaths.AugustPerson, out var aug);
+            var chip = UiControls.CreatePersonChip(key, other.ThumbnailPath ?? aug?.ThumbnailPath, pairsOn.Contains(key), out var toggle);
+            _pairChecks[key] = toggle;
+            WidgetPairChecks.Children.Add(chip);
         }
     }
 
@@ -335,6 +379,7 @@ public partial class MainWindow : Window, ITrayHost
         }
         _featured.WriteModel(model);
         AppendLog("Saved featured-people.txt");
+        ShowToast("Featured list saved");
         RefreshExcludeList();
     }
 
@@ -349,6 +394,7 @@ public partial class MainWindow : Window, ITrayHost
             return;
         _featured.AddPhotoLine(dlg.FileName);
         AppendLog($"Added photo line: {dlg.FileName}");
+        ShowToast("Pinned photo added");
         RefreshExcludeList();
     }
 
@@ -371,7 +417,13 @@ public partial class MainWindow : Window, ITrayHost
         try
         {
             var code = await _runner.RunPowerShellAsync(PhotoPaths.UpdateFeaturedScript, CancellationToken.None);
-            AppendLog(code == 0 ? "Widget update finished." : $"Widget script exit code {code}.", code != 0);
+            if (code == 0)
+            {
+                AppendLog("Widget update finished.");
+                ShowToast("Widget update finished");
+            }
+            else
+                AppendLog($"Widget script exit code {code}.", true);
         }
         catch (Exception ex)
         {

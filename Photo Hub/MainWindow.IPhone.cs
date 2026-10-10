@@ -72,6 +72,7 @@ public partial class MainWindow
     private void GoSortAfterSync_OnClick(object sender, RoutedEventArgs e)
     {
         SourceFolderBox.Text = IPhoneBackupBox.Text.Trim();
-        MainTabs.SelectedIndex = 0;
+        NavSort.IsChecked = true;
+        ShowPage(PhotoHubPage.Sort);
     }
 }

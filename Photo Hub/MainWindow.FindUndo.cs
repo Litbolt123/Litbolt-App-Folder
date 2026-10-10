@@ -15,12 +15,31 @@ public partial class MainWindow
             year,
             FindFileBox.Text);
         FindResults.ItemsSource = hits;
+        FindResultsGrid.Children.Clear();
+        _findCards.Clear();
+        foreach (var hit in hits)
+        {
+            var card = UiControls.CreateFindThumbCard(hit, SelectFindHit, _selectedFindHit?.Path == hit.Path);
+            _findCards[hit.Path] = card;
+            FindResultsGrid.Children.Add(card);
+        }
         FindStatusText.Text = $"{hits.Count} result(s).";
+    }
+
+    private void SelectFindHit(PhotoHit hit)
+    {
+        _selectedFindHit = hit;
+        foreach (var (path, card) in _findCards)
+        {
+            card.BorderBrush = new System.Windows.Media.SolidColorBrush(
+                path == hit.Path ? LitboltTheme.Accent : LitboltTheme.ButtonBg);
+        }
     }
 
     private void OpenFindResult_OnClick(object sender, RoutedEventArgs e)
     {
-        if (FindResults.SelectedItem is not PhotoHit hit)
+        var hit = _selectedFindHit ?? FindResults.SelectedItem as PhotoHit;
+        if (hit is null)
             return;
         Process.Start(new ProcessStartInfo
         {

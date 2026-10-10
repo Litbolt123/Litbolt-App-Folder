@@ -34,6 +34,7 @@ public partial class MainWindow
         PhotoWidgetOnCheck.IsChecked = RainmeterPreferencesStore.Load().PhotoWidgetActive;
         _suppressWidgetIniWrite = false;
         RefreshCurrentWidgetPhoto();
+        RefreshWidgetPreview();
         BuildIllustroChecks();
         RefreshExcludeList();
     }
@@ -45,6 +46,22 @@ public partial class MainWindow
         CurrentWidgetPhotoText.Text = string.IsNullOrEmpty(name)
             ? "(Widget not showing a file yet — click the widget to advance.)"
             : $"{name}\n{path}";
+        RefreshWidgetPreview();
+    }
+
+    private void RefreshWidgetPreview()
+    {
+        var path = RainmeterService.ReadCurrentWidgetPhotoPath();
+        WidgetPreviewImage.Source = UiControls.LoadThumb(path, 480);
+        var size = (int)Math.Clamp(WidgetSizeSlider.Value, 150, 600);
+        var radius = (int)WidgetRadiusSlider.Value;
+        var preview = Math.Min(240, size * 0.4);
+        WidgetPreviewClip.Width = preview;
+        WidgetPreviewClip.Height = preview;
+        var corner = Math.Min(radius * 0.4, preview / 2);
+        var cr = new CornerRadius(corner);
+        WidgetPreviewClip.CornerRadius = cr;
+        WidgetPreviewShadow.CornerRadius = cr;
     }
 
     private void BuildIllustroChecks()
@@ -107,6 +124,7 @@ public partial class MainWindow
         WidgetSizeLabel.Text = $"{size} px";
         WidgetSecondsLabel.Text = $"{(int)WidgetSecondsSlider.Value} s";
         WidgetRadiusLabel.Text = $"{(int)WidgetRadiusSlider.Value} px";
+        RefreshWidgetPreview();
         _widgetIniWritePending = true;
         _widgetIniDebounce?.Stop();
         _widgetIniDebounce?.Start();
@@ -170,6 +188,7 @@ public partial class MainWindow
         }
 
         AppendLog($"Excluded from widget: {fileName}");
+        ShowToast($"Excluded {fileName}");
         RefreshExcludeList();
         await RunUpdateFeaturedScriptAsync();
         RainmeterService.RefreshPhotoWidget();
@@ -186,6 +205,7 @@ public partial class MainWindow
         _featured.RemoveExcludeFileName(item);
         RefreshExcludeList();
         AppendLog($"Removed exclude: {item}");
+        ShowToast($"Removed exclude {item}");
         await RunUpdateFeaturedScriptAsync();
     }
 

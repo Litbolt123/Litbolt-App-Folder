@@ -21,7 +21,10 @@ public partial class App : Application
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        if (!SingleInstanceService.TryBecomePrimaryInstance(MutexName, out _singleInstanceMutex))
+        var uiCapture = e.Args.Length >= 2 && e.Args[0] == "--capture-ui";
+        if (uiCapture)
+            Directory.CreateDirectory(DataDirectory);
+        else if (!SingleInstanceService.TryBecomePrimaryInstance(MutexName, out _singleInstanceMutex))
         {
             SingleInstanceService.NotifyPrimaryInstance(DataDirectory);
             Shutdown();

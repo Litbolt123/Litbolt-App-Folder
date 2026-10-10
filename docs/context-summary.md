@@ -3,6 +3,11 @@
 - **User:** Build Photo Hub WPF (.NET 8) for face sort / people / Rainmeter widget; place under `Photo Hub/`; match Litbolt App Folder styling, shortcuts, launcher pattern.
 - **Done:** New `Photo Hub/PhotoHub.csproj` (Litbolt.Shell tray/single-instance, dark UI like Local Video Hub, Release → `%LocalAppData%\Programs\PhotoHub\` + Start Menu shortcut via shared `scripts/update-windows-shortcuts.ps1`). Python orchestrator `Pictures\_sort-tools\photo_hub\sort_inbox.py` reuses `audit2.detect` + strict thresholds (0.80/48/0.62/0.08). Wired into solution + App Folder nav (`PhotoHubModule`, settings EXE override). README in `Photo Hub/README.md`.
 
+## 2026-10-10 — Photo Hub UI polish (sidebar, cards, toasts)
+
+- **User:** Dark Litbolt layout refresh—sidebar nav, widget preview, people/find grids, gold primary buttons, top progress + toasts; screenshots per tab.
+- **Done:** `PhotoHubTheme.xaml`, `UiControls`, sidebar RadioNav, no behavior change. Release build; captures in `Photo Hub/docs/ui-screenshots/`.
+
 ## 2026-10-10 — Photo Hub Rainmeter slider + exclude fixes
 
 - **User:** Sliders destroyed Photo Widget.ini; hide/remove exclude broken (read `current-photo.inc`, run Update-FeaturedPhotos on remove).
