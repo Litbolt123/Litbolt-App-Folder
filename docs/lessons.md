@@ -23,6 +23,22 @@ Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 - **Verify:** `BC` under `_face-groups` with only `face_1.jpg`…`face_6.jpg` shows **6 photos**.
 - **Do not regress:** `FaceGroupsService.ListPeople`.
 
+## PowerShell feeder scripts — Unicode em dash on Windows
+
+- **Symptom:** `today-feed.ps1` fails to parse with “Unexpected token” near countdown strings.
+- **Failed:** Unicode em dash (`—`) in double-quoted strings when file encoding / console code page disagrees.
+- **Worked:** Use ASCII ` - ` in `.ps1` string literals; keep fancy dashes only in `.md` / Rainmeter display `.inc` if UTF-8 is explicit.
+- **Verify:** `powershell -File today-feed.ps1` exits 0 from `Skins\Litbolt\feeders`.
+- **Do not regress:** Feeder scripts under `rainmeter-skins/Litbolt/feeders`.
+
+## Rainmeter empty variable hide — formula syntax
+
+- **Symptom:** Meters for optional events/countdowns show blank rows or bad `Hidden` parse.
+- **Failed:** `Hidden=([#Event1#] = ?)` placeholder syntax.
+- **Worked:** `Hidden=([#Event1#]="")` with `DynamicVariables=1`.
+- **Verify:** Today skin with empty `Event2` hides meter E2 only.
+- **Do not regress:** `Today/Today.ini` event/countdown meters.
+
 ## Face-groups backfill — numbered face_*.jpg to full photo
 
 - **Symptom:** Person folder has only `face_1.jpg`…`face_N.jpg` (widget/cluster thumbs); no full originals for count or widget pairing.

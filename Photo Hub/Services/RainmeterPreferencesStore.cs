@@ -6,6 +6,7 @@ public sealed class RainmeterPreferences
 {
     public bool PhotoWidgetActive { get; set; } = true;
     public Dictionary<string, bool> IllustroSkins { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, bool> LitboltSkins { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }
 
 public static class RainmeterPreferencesStore

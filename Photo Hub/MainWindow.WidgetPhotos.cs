@@ -10,6 +10,7 @@ public partial class MainWindow
 {
     private bool _suppressWidgetIniWrite;
     private readonly Dictionary<string, CheckBox> _illustroChecks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, CheckBox> _litboltChecks = new(StringComparer.OrdinalIgnoreCase);
     private DispatcherTimer? _widgetIniDebounce;
     private bool _widgetIniWritePending;
 
@@ -35,6 +36,7 @@ public partial class MainWindow
         _suppressWidgetIniWrite = false;
         RefreshCurrentWidgetPhoto();
         RefreshWidgetPreview();
+        BuildLitboltChecks();
         BuildIllustroChecks();
         RefreshExcludeList();
     }
@@ -62,6 +64,38 @@ public partial class MainWindow
         var cr = new CornerRadius(corner);
         WidgetPreviewClip.CornerRadius = cr;
         WidgetPreviewShadow.CornerRadius = cr;
+    }
+
+    private void BuildLitboltChecks()
+    {
+        LitboltChecksPanel.Children.Clear();
+        _litboltChecks.Clear();
+        var prefs = RainmeterPreferencesStore.Load();
+        foreach (var skin in RainmeterService.ListLitboltSkins())
+        {
+            var on = prefs.LitboltSkins.GetValueOrDefault(skin.ConfigKey, false);
+            var cb = new CheckBox
+            {
+                Content = skin.DisplayName,
+                IsChecked = on,
+                Foreground = System.Windows.Media.Brushes.White,
+                Margin = new Thickness(0, 4, 16, 4),
+                ToolTip = $"Load or unload Rainmeter skin: {skin.IniPath}",
+            };
+            cb.Checked += (_, _) => SetLitbolt(skin.ConfigKey, true);
+            cb.Unchecked += (_, _) => SetLitbolt(skin.ConfigKey, false);
+            _litboltChecks[skin.ConfigKey] = cb;
+            LitboltChecksPanel.Children.Add(cb);
+        }
+    }
+
+    private void SetLitbolt(string key, bool on)
+    {
+        RainmeterService.SetLitboltSkinActive(key, on);
+        var prefs = RainmeterPreferencesStore.Load();
+        prefs.LitboltSkins[key] = on;
+        RainmeterPreferencesStore.Save(prefs);
+        AppendLog(on ? $"Litbolt skin on: {key}" : $"Litbolt skin off: {key}");
     }
 
     private void BuildIllustroChecks()

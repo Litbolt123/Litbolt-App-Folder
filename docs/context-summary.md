@@ -149,5 +149,12 @@
 - **Worked:** Mapped crops via `audit\inv.json` (Group 05 - BC) → indices in `faces_meta.json` → six May 2025 HEICs (`IMG_6324`–`IMG_6334`). Copied with `Photo Hub/scripts/bc-backfill-full-photos.py`; six COPY lines in `_fold-log.txt` under `BC face crop full-photo backfill`.
 - **Verify:** Refresh People tab — BC should show 6 full photos (plus crops).
 
+## 2026-10-10 — Litbolt Rainmeter widgets (4) + Photo Hub toggles
+
+- **Ask:** Four custom Rainmeter skins (Helios Health, Today, Litbolt Stats, Market) matching Photo Widget look; feeders + Task Scheduler; install under `%USERPROFILE%\Rainmeter\Skins\Litbolt\` without activating; README; Photo Hub Widget tab on/off; Release build + commit. Do not touch Photo Widget.
+- **Shipped:** Repo `rainmeter-skins/Litbolt/` (Theme.inc, four `.ini`, `@Resources`, `feeders/*.ps1`, `register-tasks.ps1`, `README.md`); `scripts/install-litbolt-rainmeter-skins.ps1` → live Rainmeter folder; Photo Hub `ListLitboltSkins` / `SetLitboltSkinActive`, `LitboltChecksPanel`, `rainmeter.json` `LitboltSkins` prefs.
+- **Config:** HWiNFO IDs in `Helios Health\@Resources\sensors.inc`; Google iCal URL in `Today\@Resources\calendar-config.json`; CurseForge in `stats-config.json`; Etsy placeholder until API wired.
+- **Verify:** Rainmeter Manage shows Litbolt skins (unchecked); feeders write `data.inc`; Photo Hub Widget tab lists four Litbolt checkboxes; `register-tasks.ps1` elevated for schedules.
+
 ## 2026-07-20 — Project born
 

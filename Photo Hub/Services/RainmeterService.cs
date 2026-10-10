@@ -8,6 +8,8 @@ public sealed record RainmeterWidgetSettings(int Size, int Seconds, int Radius);
 
 public sealed record IllustroSkinEntry(string ConfigKey, string DisplayName, string IniPath);
 
+public sealed record LitboltSkinEntry(string ConfigKey, string DisplayName, string IniPath);
+
 public static class RainmeterService
 {
     private const string GoodIniBackupFileName = "Photo Widget.ini.good-2026-10-10";
@@ -190,6 +192,30 @@ public static class RainmeterService
     }
 
     public static void SetIllustroActive(string configKey, bool active) =>
+        RunBang(active ? $"!ActivateConfig \"{configKey}\"" : $"!DeactivateConfig \"{configKey}\"");
+
+    public static IReadOnlyList<LitboltSkinEntry> ListLitboltSkins()
+    {
+        if (!Directory.Exists(PhotoPaths.LitboltSkinsRoot))
+            return [];
+        var list = new List<LitboltSkinEntry>();
+        foreach (var dir in Directory.GetDirectories(PhotoPaths.LitboltSkinsRoot))
+        {
+            var name = Path.GetFileName(dir);
+            if (name.Equals("feeders", StringComparison.OrdinalIgnoreCase)
+                || name.Equals("@Resources", StringComparison.OrdinalIgnoreCase))
+                continue;
+            foreach (var ini in Directory.GetFiles(dir, "*.ini"))
+            {
+                var file = Path.GetFileName(ini);
+                var key = $"Litbolt\\{name}\\{file}";
+                list.Add(new LitboltSkinEntry(key, name, ini));
+            }
+        }
+        return list.OrderBy(x => x.DisplayName, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    public static void SetLitboltSkinActive(string configKey, bool active) =>
         RunBang(active ? $"!ActivateConfig \"{configKey}\"" : $"!DeactivateConfig \"{configKey}\"");
 
     /// <summary>Full path from @Resources\current-photo.inc (CurrentPhoto=).</summary>

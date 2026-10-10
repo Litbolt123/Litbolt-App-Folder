@@ -1,0 +1,19 @@
+{
+  "CurseForgeApiKey": "",
+  "Mods": [
+    {
+      "Name": "Better Flashlight Addon",
+      "Slug": "better-flashlight-addon",
+      "GameId": 432
+    },
+    {
+      "Name": "Maple Bear Apocalypse",
+      "Slug": "maple-bear-apocalypse",
+      "GameId": 432
+    }
+  ],
+  "Etsy": {
+    "Configured": false,
+    "ShopSalesPlaceholder": "Set up Etsy in stats-config.json when API is ready"
+  }
+}

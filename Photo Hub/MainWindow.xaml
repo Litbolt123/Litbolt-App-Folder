@@ -169,11 +169,13 @@
 
                   <TextBlock Text="On/off" Style="{StaticResource Heading2}"/>
                   <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
-                             Text="Show or hide the Photo Widget and optional illustro skins on the desktop."/>
+                             Text="Show or hide the Photo Widget, Litbolt widgets, and optional illustro skins on the desktop."/>
                   <CheckBox x:Name="PhotoWidgetOnCheck" Content="Show Photo Widget on desktop" Foreground="{StaticResource BrushText}" Margin="0,0,0,8"
                             ToolTip="Toggle Rainmeter skin Photo Widget\Photo Widget.ini (unload/load skin)."
                             Checked="PhotoWidgetOnCheck_Changed" Unchecked="PhotoWidgetOnCheck_Changed"/>
-                  <TextBlock Text="Extra Rainmeter skins (illustro)" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,0,0,4"/>
+                  <TextBlock Text="Litbolt widgets" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,8,0,4"/>
+                  <WrapPanel x:Name="LitboltChecksPanel"/>
+                  <TextBlock Text="Extra Rainmeter skins (illustro)" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,8,0,4"/>
                   <WrapPanel x:Name="IllustroChecksPanel"/>
                 </StackPanel>
               </Grid>

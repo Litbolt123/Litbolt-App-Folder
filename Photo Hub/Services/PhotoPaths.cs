@@ -19,6 +19,7 @@ public static class PhotoPaths
     public const string RainmeterExe = @"C:\Program Files\Rainmeter\Rainmeter.exe";
     public const string RainmeterSkinsRoot = @"C:\Users\Augus\Rainmeter\Skins";
     public const string IllustroRoot = RainmeterSkinsRoot + @"\illustro";
+    public const string LitboltSkinsRoot = RainmeterSkinsRoot + @"\Litbolt";
     public const string GroupPhotosCsv = PeopleRoot + @"\_August group photos\group-photos.csv";
     public const string AugustPerson = "August Littell";
     public const string IPhoneSyncExe = @"C:\Users\Augus\Projects\iPhone Photo Sync\artifacts\iPhone Photo Sync.exe";
