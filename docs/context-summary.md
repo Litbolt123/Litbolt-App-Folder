@@ -153,8 +153,13 @@
 
 - **Ask:** Four custom Rainmeter skins (Helios Health, Today, Litbolt Stats, Market) matching Photo Widget look; feeders + Task Scheduler; install under `%USERPROFILE%\Rainmeter\Skins\Litbolt\` without activating; README; Photo Hub Widget tab on/off; Release build + commit. Do not touch Photo Widget.
 - **Shipped:** Repo `rainmeter-skins/Litbolt/` (Theme.inc, four `.ini`, `@Resources`, `feeders/*.ps1`, `register-tasks.ps1`, `README.md`); `scripts/install-litbolt-rainmeter-skins.ps1` → live Rainmeter folder; Photo Hub `ListLitboltSkins` / `SetLitboltSkinActive`, `LitboltChecksPanel`, `rainmeter.json` `LitboltSkins` prefs.
-- **Config:** HWiNFO IDs in `Helios Health\@Resources\sensors.inc`; Google iCal URL in `Today\@Resources\calendar-config.json`; CurseForge in `stats-config.json`; Etsy placeholder until API wired.
+- **Config:** HWiNFO Gadget registry indices in `Helios Health\@Resources\sensors.inc` (not shared-memory plugin); Google iCal URL in `Today\@Resources\calendar-config.json`; CurseForge in `stats-config.json`; Etsy placeholder until API wired.
 - **Verify:** Rainmeter Manage shows Litbolt skins (unchecked); feeders write `data.inc`; Photo Hub Widget tab lists four Litbolt checkboxes; `register-tasks.ps1` elevated for schedules.
+
+## 2026-10-10 — Helios Health: HWiNFO Gadget registry
+
+- **Ask:** Drop shared-memory HWiNFO plugin (12h free limit); use Reporting to Gadget per Rainmeter docs.
+- **Done:** `Helios Health.ini` uses `Registry` → `SOFTWARE\HWiNFO64\VSB` / `ValueRaw#Index*#`; `sensors.inc` holds Gadget indices + `RegHKey`; README + lessons updated.
 
 ## 2026-07-20 — Project born
 

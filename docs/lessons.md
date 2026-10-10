@@ -31,6 +31,14 @@ Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 - **Verify:** `powershell -File today-feed.ps1` exits 0 from `Skins\Litbolt\feeders`.
 - **Do not regress:** Feeder scripts under `rainmeter-skins/Litbolt/feeders`.
 
+## HWiNFO free edition — Gadget registry vs shared-memory plugin
+
+- **Symptom:** CPU/GPU readings stop after ~12 hours on free HWiNFO when using the HWiNFO Rainmeter plugin (shared memory).
+- **Failed:** Settings → Rainmeter shared memory + `HWiNFO.dll` plugin + hex sensor IDs in the skin.
+- **Worked:** HWiNFO **Reporting to Gadget** → Registry `HKCU\SOFTWARE\HWiNFO64\VSB` → `ValueRaw{N}` via Rainmeter `Registry` measure; indices in `Helios Health\@Resources\sensors.inc`. [Rainmeter docs](https://docs.rainmeter.net/tips/hwinfo/).
+- **Verify:** `reg query HKCU\SOFTWARE\HWiNFO64\VSB` shows `ValueRaw*` for your indices; skin temps match HWiNFO after 12+ hours.
+- **Do not regress:** Helios Health skin — do not require HWiNFO.dll or shared memory.
+
 ## Rainmeter empty variable hide — formula syntax
 
 - **Symptom:** Meters for optional events/countdowns show blank rows or bad `Hidden` parse.

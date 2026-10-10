@@ -18,13 +18,13 @@ Four desktop widgets matching Photo Hub / Photo Widget styling (`#12141A` backgr
 
 ## 2. Helios Health
 
-- **Needs:** [HWiNFO](https://www.hwinfo.com/) running with **Rainmeter** reporting enabled (Settings → Rainmeter). Portable copy: `C:\Users\Augus\Desktop Folders\AcerPH18\hwi_854`.
-- **Needs:** Rainmeter **HWiNFO plugin** (`HWiNFO.dll` in Rainmeter's Plugins folder).
-- **Configure sensors:** Edit `Helios Health\@Resources\sensors.inc` — in HWiNFO Sensors, right-click each reading (CPU package temp, CPU package power, GPU temp, fan RPM) → **Copy value for Rainmeter** → paste the three IDs per sensor.
+- **Needs:** [HWiNFO](https://www.hwinfo.com/) 7.02+ with **Reporting to Gadget** (not shared memory — free edition). Portable copy: `C:\Users\Augus\Desktop Folders\AcerPH18\hwi_854`. Setup: [Rainmeter HWiNFO tips](https://docs.rainmeter.net/tips/hwinfo/) — leave **Shared Memory** off; Sensors → **Configure Sensors** → **HWiNFO Gadget** → enable reporting; check **Report value in Gadget** for CPU package temp, CPU package power, GPU temp, fan RPM.
+- **Configure indices:** Edit `Helios Health\@Resources\sensors.inc` — set `IndexCpuTemp`, `IndexCpuPower`, `IndexGpuTemp`, `IndexFanRpm` to each sensor's Gadget **Index** (list with `reg query HKCU\SOFTWARE\HWiNFO64\VSB`). Use `RegHKey=HKEY_LOCAL_MACHINE` if values only appear under HKLM.
+- **No Rainmeter HWiNFO plugin** required.
 - **ThrottleStop:** Shows a red **ThrottleStop is OFF** banner when `ThrottleStop.exe` is not running; green check when it is.
 - **Temps:** &lt; 80°C normal, 80–94°C gold, ≥ 95°C red.
 
-No feeder script (live HWiNFO plugin).
+No feeder script (live HWiNFO registry values).
 
 ## 3. Today
 
@@ -96,7 +96,7 @@ To refresh Rainmeter's copy:
 
 | Widget | Skin ini | Data |
 |--------|----------|------|
-| Helios Health | `Helios Health\Helios Health.ini` | HWiNFO plugin + `sensors.inc` |
+| Helios Health | `Helios Health\Helios Health.ini` | HWiNFO Gadget registry + `sensors.inc` |
 | Today | `Today\Today.ini` | `data.inc` (feeder) |
 | Litbolt Stats | `Litbolt Stats\Litbolt Stats.ini` | `data.inc` (feeder) |
 | Market | `Market\Market.ini` | `data.inc` (feeder) |
