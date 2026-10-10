@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:PhotoHub.Controls"
                     xmlns:services="clr-namespace:PhotoHub.Services"
-                    xmlns:panels="clr-namespace:PhotoHub.Panels">
+                    >
 
   <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI Variable, Segoe UI</FontFamily>
   <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
@@ -44,13 +44,12 @@
     <Setter Property="Padding" Value="0"/>
     <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
     <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
-    <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
-    <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
+    <Setter Property="VirtualizingPanel.IsVirtualizing" Value="False"/>
     <Setter Property="ItemTemplate" Value="{StaticResource PersonFolderCardTemplate}"/>
     <Setter Property="ItemsPanel">
       <Setter.Value>
         <ItemsPanelTemplate>
-          <panels:VirtualizingWrapPanel ItemWidth="156" ItemHeight="172"/>
+          <WrapPanel Orientation="Horizontal"/>
         </ItemsPanelTemplate>
       </Setter.Value>
     </Setter>
@@ -58,7 +57,7 @@
       <Setter.Value>
         <Style TargetType="ListBoxItem">
           <Setter Property="Width" Value="148"/>
-          <Setter Property="Height" Value="172"/>
+          <Setter Property="Height" Value="170"/>
           <Setter Property="Margin" Value="0,0,8,8"/>
           <Setter Property="Padding" Value="12"/>
           <Setter Property="HorizontalContentAlignment" Value="Center"/>

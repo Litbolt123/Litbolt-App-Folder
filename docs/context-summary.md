@@ -156,6 +156,11 @@
 - **Config:** HWiNFO Gadget registry indices in `Helios Health\@Resources\sensors.inc` (not shared-memory plugin); Google iCal URL in `Today\@Resources\calendar-config.json`; CurseForge in `stats-config.json`; Etsy placeholder until API wired.
 - **Verify:** Rainmeter Manage shows Litbolt skins (unchecked); feeders write `data.inc`; Photo Hub Widget tab lists four Litbolt checkboxes; `register-tasks.ps1` elevated for schedules.
 
+## 2026-10-10 — People grid: drop broken virtualization
+
+- **Ask:** Fix clipped rows and scroll stopping at ~24 of 70+ people.
+- **Done:** Replaced `VirtualizingWrapPanel` with plain `WrapPanel`, `IsVirtualizing=False`, fixed 170px card height; removed panel class; thumbs still async via `PersonFaceImage`.
+
 ## 2026-10-10 — Photo Hub all tabs: sticky bars + scroll regions
 
 - **Ask:** Apply Widget-tab pattern to Sort, People, Photos, iPhone, Find, Undo, Log — sticky primary actions, scrollable lists with search/filter, 1366×768; screenshots each tab.

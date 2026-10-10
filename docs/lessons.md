@@ -11,9 +11,17 @@ Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 
 - **Symptom:** People tab scroll flickers then settles; worse with 70+ folders.
 - **Failed:** `WrapPanel` inside outer `ScrollViewer` with `LoadThumb` on refresh for every card on the UI thread.
-- **Worked:** People page uses its own `ListBox` + `VirtualizingWrapPanel` (`PhotoHub.Panels`), `ScrollViewer.CanContentScroll=False`, fixed 148×172 cards, `PersonFaceImage` + `ThumbnailCache` (LRU, `DecodePixelWidth` 160, `DispatcherPriority.Background`). Other tabs stay in `TabScrollHost`.
+- **Worked:** People `ListBox` with `ScrollViewer.CanContentScroll=False`, fixed 148×170 cards, `PersonFaceImage` + `ThumbnailCache` async decode. Page outside main tab scroll.
 - **Verify:** Scroll People grid with 70+ entries — no layout jump as thumbs load; CPU stays low while scrolling.
 - **Do not regress:** `PagePeople` outside `TabScrollHost`; do not block `RefreshPeople` with synchronous decode for all folders.
+
+## People grid virtualization — clipped rows and truncated scroll
+
+- **Symptom:** Top rows clip while scrolling; scrollbar stops after ~24 people with empty space below (70+ folders on disk).
+- **Failed:** Custom `VirtualizingWrapPanel` with `ItemHeight=172` while `ListBoxItem` also has `Margin 0,0,8,8` (row pitch mismatch); fragile `IScrollInfo` / generator remove.
+- **Worked:** Non-virtualized `WrapPanel` + `VirtualizingPanel.IsVirtualizing=False` (~100 people OK); fixed `Height=170` on items; `PersonFaceImage` async thumbs unchanged.
+- **Verify:** Scroll People from first card through **Zion Walsman** (last alphabetically); full scrollbar range, no clipped row tops.
+- **Do not regress:** Do not re-enable custom virtualizing wrap without matching item height + margin to panel line pitch.
 
 ## Face-groups photo count — face_* only folders
 
@@ -38,14 +46,6 @@ Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 - **Worked:** Define `SolidColorBrush` / fonts at top of theme dictionary before styles and templates; use `DynamicResource` in item templates if order cannot change.
 - **Verify:** `--capture-ui … people` at 1366×768 without `XamlParseException`.
 - **Do not regress:** `PhotoHubTheme.xaml` resource order.
-
-## VirtualizingWrapPanel — GeneratorPosition on remove
-
-- **Symptom:** `Remove(-1,1) cannot include items without a corresponding user interface element` when People list measures with filtered `ICollectionView`.
-- **Failed:** `generator.Remove(new GeneratorPosition(index, 0), 1)` when `IndexFromContainer` returns -1.
-- **Worked:** `GeneratorPositionFromIndex(index)` only when `index >= 0`; drop orphan internal children without generator remove.
-- **Verify:** Open People tab, type in search filter, scroll grid.
-- **Do not regress:** `Panels/VirtualizingWrapPanel.cs` `RemoveInvisible`.
 
 ## Photo Hub Widget tab — long single column scroll
 
