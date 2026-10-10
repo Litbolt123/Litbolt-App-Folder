@@ -1,6 +1,7 @@
 <Window x:Class="PhotoHub.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:services="clr-namespace:PhotoHub.Services"
         Title="Photo Hub"
         Width="1180" Height="800"
         MinWidth="960" MinHeight="640"
@@ -27,69 +28,67 @@
       <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,16,0" Padding="16">
         <StackPanel>
           <TextBlock Text="Photo Hub" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource BrushText}" Margin="0,0,0,16"/>
-          <RadioButton x:Name="NavSort" Style="{StaticResource NavButton}" Content="Sort" Tag="&#xE8B7;" GroupName="Nav" Checked="Nav_Checked"/>
-          <RadioButton x:Name="NavPeople" Style="{StaticResource NavButton}" Content="People" Tag="&#xE716;" GroupName="Nav" Checked="Nav_Checked"/>
-          <RadioButton x:Name="NavWidget" Style="{StaticResource NavButton}" Content="Widget" Tag="&#xE7B8;" GroupName="Nav" Checked="Nav_Checked"/>
-          <RadioButton x:Name="NavPhotos" Style="{StaticResource NavButton}" Content="Photos" Tag="&#xE91B;" GroupName="Nav" Checked="Nav_Checked"/>
-          <RadioButton x:Name="NavIPhone" Style="{StaticResource NavButton}" Content="iPhone" Tag="&#xE8EA;" GroupName="Nav" Checked="Nav_Checked"/>
-          <RadioButton x:Name="NavFind" Style="{StaticResource NavButton}" Content="Find" Tag="&#xE721;" GroupName="Nav" Checked="Nav_Checked"/>
-          <RadioButton x:Name="NavUndo" Style="{StaticResource NavButton}" Content="Undo" Tag="&#xE7A7;" GroupName="Nav" Checked="Nav_Checked"/>
-          <RadioButton x:Name="NavLog" Style="{StaticResource NavButton}" Content="Log" Tag="&#xE7C3;" GroupName="Nav" Checked="Nav_Checked"/>
+          <RadioButton x:Name="NavSort" Style="{StaticResource NavButton}" Content="Sort" Tag="&#xE8B7;" GroupName="Nav" Checked="Nav_Checked"
+                        ToolTip="Scan folders and assign unknown faces (sort_inbox.py, _fold-log.txt)."/>
+          <RadioButton x:Name="NavPeople" Style="{StaticResource NavButton}" Content="People" Tag="&#xE716;" GroupName="Nav" Checked="Nav_Checked"
+                        ToolTip="Browse and fix Pictures\People\_face-groups person folders."/>
+          <RadioButton x:Name="NavWidget" Style="{StaticResource NavButton}" Content="Widget" Tag="&#xE7B8;" GroupName="Nav" Checked="Nav_Checked"
+                        ToolTip="Rainmeter Photo Widget: featured-people.txt, Photo Widget.ini, excludes."/>
+          <RadioButton x:Name="NavPhotos" Style="{StaticResource NavButton}" Content="Photos" Tag="&#xE91B;" GroupName="Nav" Checked="Nav_Checked"
+                        ToolTip="Widget Photos pool tools (widget-NN / people-NN JPGs)."/>
+          <RadioButton x:Name="NavIPhone" Style="{StaticResource NavButton}" Content="iPhone" Tag="&#xE8EA;" GroupName="Nav" Checked="Nav_Checked"
+                        ToolTip="iPhone Photo Sync backup folder and headless sync."/>
+          <RadioButton x:Name="NavFind" Style="{StaticResource NavButton}" Content="Find" Tag="&#xE721;" GroupName="Nav" Checked="Nav_Checked"
+                        ToolTip="Search _face-groups copies by person, year, or file name."/>
+          <RadioButton x:Name="NavUndo" Style="{StaticResource NavButton}" Content="Undo" Tag="&#xE7A7;" GroupName="Nav" Checked="Nav_Checked"
+                        ToolTip="Undo lines from Pictures\People\_fold-log.txt."/>
+          <RadioButton x:Name="NavLog" Style="{StaticResource NavButton}" Content="Log" Tag="&#xE7C3;" GroupName="Nav" Checked="Nav_Checked"
+                        ToolTip="In-app session log (not saved to disk)."/>
         </StackPanel>
       </Border>
 
-      <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+      <Grid Grid.Column="1">
+        <ScrollViewer x:Name="TabScrollHost" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <Grid>
           <!-- Sort -->
           <Grid x:Name="PageSort" Visibility="Visible">
             <StackPanel>
-              <TextBlock Text="Sort new photos" Style="{StaticResource Heading1}"/>
-              <TextBlock Style="{StaticResource HelperText}"
-                         Text="Pick a folder (default: iPhone Backup). New photos are face-scanned with strict matching, then copied into person folders—originals stay put."/>
+              <TextBlock Text="Sort" Style="{StaticResource Heading1}"/>
+              <TextBlock Text="Sort new photos" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+              <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                         Text="Scan a folder with strict face matching; matches are copied into person folders (originals stay put)."/>
               <Border Style="{StaticResource Card}">
                 <StackPanel>
                   <DockPanel Margin="0,0,0,8">
-                    <Button DockPanel.Dock="Right" Content="Browse…" Style="{StaticResource SecondaryButton}" Click="BrowseSource_OnClick"/>
-                    <TextBox x:Name="SourceFolderBox" Style="{StaticResource FieldBox}" Margin="0"/>
+                    <Button DockPanel.Dock="Right" Content="Choose folder…" Style="{StaticResource SecondaryButton}" Click="BrowseSource_OnClick"
+                            ToolTip="Pick the folder to scan (default: Pictures\iPhone Backup). Does not change files until you run Scan and sort."/>
+                    <TextBox x:Name="SourceFolderBox" Style="{StaticResource FieldBox}" Margin="0"
+                             ToolTip="Folder path passed to sort_inbox.py as the scan source."/>
                   </DockPanel>
                   <StackPanel Orientation="Horizontal">
-                    <Button x:Name="RunSortBtn" Content="Scan and sort" Style="{StaticResource PrimaryButton}" Click="RunSort_OnClick"/>
+                    <Button x:Name="RunSortBtn" Content="Scan and sort" Style="{StaticResource PrimaryButton}" Click="RunSort_OnClick"
+                            ToolTip="Run the Python face sort. Copies into Pictures\People\_face-groups and appends COPY lines to Pictures\People\_fold-log.txt."/>
                   </StackPanel>
                   <ProgressBar x:Name="SortProgress" Style="{StaticResource InlineProgress}" Minimum="0" Maximum="100" Value="0"/>
                   <TextBlock x:Name="SortProgressText" Foreground="{StaticResource BrushMuted}" Margin="0,8,0,0"/>
                 </StackPanel>
               </Border>
-              <TextBlock Text="Unknown faces" Style="{StaticResource Heading2}"/>
-              <TextBlock Style="{StaticResource HelperText}" Text="Type a name and assign each unknown face to a person folder." Margin="0,0,0,8"/>
+              <TextBlock Text="Name unknown faces" Style="{StaticResource Heading2}"/>
+              <TextBlock Style="{StaticResource HelperText}" Text="After a sort, type a name and assign each unknown face to a person folder." Margin="0,0,0,8"/>
               <Border Style="{StaticResource Card}">
                 <WrapPanel x:Name="UnknownFacesPanel"/>
               </Border>
             </StackPanel>
           </Grid>
 
-          <!-- People -->
-          <Grid x:Name="PagePeople" Visibility="Collapsed">
-            <StackPanel>
-              <TextBlock Text="People" Style="{StaticResource Heading1}"/>
-              <TextBlock Style="{StaticResource HelperText}" Text="Face-group folders with photo counts—hover a card for rename or merge."/>
-              <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <Button Content="Refresh" Style="{StaticResource SecondaryButton}" Click="RefreshPeople_OnClick"/>
-                <Button x:Name="RenamePersonBtn" Content="Rename…" Style="{StaticResource SecondaryButton}" Click="RenamePerson_OnClick"/>
-                <Button x:Name="MergePersonBtn" Content="Merge into…" Style="{StaticResource SecondaryButton}" Click="MergePerson_OnClick"/>
-              </StackPanel>
-              <Border Style="{StaticResource Card}">
-                <WrapPanel x:Name="PeopleGrid"/>
-              </Border>
-              <ListView x:Name="PeopleList" Visibility="Collapsed" Height="0"/>
-            </StackPanel>
-          </Grid>
-
           <!-- Widget -->
           <Grid x:Name="PageWidget" Visibility="Collapsed">
             <StackPanel>
-              <TextBlock Text="Rainmeter widget" Style="{StaticResource Heading1}"/>
-              <TextBlock Style="{StaticResource HelperText}"
-                         Text="Choose featured people, tune the skin, and update featured-people.txt for the desktop widget."/>
+              <TextBlock Text="Widget" Style="{StaticResource Heading1}"/>
+              <Button Content="Update widget" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Click="UpdateWidget_OnClick" Margin="0,0,0,12"
+                      ToolTip="Run Widget Photos\Update-FeaturedPhotos.ps1 to rebuild the rotation pool from featured-people.txt and your person folders."/>
+              <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                         Text="Control the Rainmeter Photo Widget: who appears, which photos are pinned or hidden, and how the skin looks."/>
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="280"/>
@@ -108,43 +107,53 @@
                   </StackPanel>
                 </Border>
                 <StackPanel Grid.Column="1">
-                  <Border Style="{StaticResource Card}">
-                    <StackPanel>
-                      <CheckBox x:Name="PhotoWidgetOnCheck" Content="Photo Widget visible on desktop" Foreground="{StaticResource BrushText}" Margin="0,0,0,8"
-                                Checked="PhotoWidgetOnCheck_Changed" Unchecked="PhotoWidgetOnCheck_Changed"/>
-                      <Button Content="Hide current widget photo" Style="{StaticResource SecondaryButton}" Click="HideCurrentWidgetPhoto_OnClick"/>
-                    </StackPanel>
-                  </Border>
-                  <TextBlock Text="Featured people" Style="{StaticResource Heading2}"/>
+                  <TextBlock Text="Who's featured" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+                  <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                             Text="Toggle people and August pairs, then save the list before updating the widget."/>
                   <WrapPanel x:Name="WidgetPeopleChecks"/>
                   <TextBlock Text="Pairs with August" Style="{StaticResource Heading2}"/>
                   <WrapPanel x:Name="WidgetPairChecks"/>
-                  <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Button Content="Add single photo…" Style="{StaticResource SecondaryButton}" Click="AddWidgetPhoto_OnClick"/>
-                    <Button Content="Save featured list" Style="{StaticResource PrimaryButton}" Click="SaveFeatured_OnClick"/>
-                    <Button Content="Update widget" Style="{StaticResource SecondaryButton}" Click="UpdateWidget_OnClick"/>
+                  <Button Content="Save featured list" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Click="SaveFeatured_OnClick"
+                          ToolTip="Write Widget Photos\featured-people.txt (people, pairs, pinned photo: lines, and excludes)."/>
+
+                  <TextBlock Text="Specific photos" Style="{StaticResource Heading2}"/>
+                  <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                             Text="Pin a file, hide what is on screen now, or allow a previously excluded name again."/>
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Content="Pin a photo…" Style="{StaticResource SecondaryButton}" Click="AddWidgetPhoto_OnClick"
+                            ToolTip="Add a photo: line to featured-people.txt so Update-FeaturedPhotos.ps1 always includes that file."/>
+                    <Button Content="Hide this photo from the widget" Style="{StaticResource SecondaryButton}" Click="HideCurrentWidgetPhoto_OnClick"
+                            ToolTip="Exclude the photo shown in the preview from rotation; updates featured-people.txt, Featured copies, and @Resources\current-photo.inc."/>
                   </StackPanel>
-                  <TextBlock Text="Excluded file names" Style="{StaticResource Heading2}"/>
-                  <StackPanel Orientation="Horizontal">
-                    <ListBox x:Name="ExcludeList" Width="280" Height="100" Background="{StaticResource BrushInput}" Foreground="{StaticResource BrushText}" Margin="0,0,8,0"/>
-                    <Button Content="Remove exclude" Style="{StaticResource SecondaryButton}" VerticalAlignment="Top" Click="RemoveExclude_OnClick"/>
+                  <TextBlock Text="Excluded file names" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,0,0,4"/>
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <ListBox x:Name="ExcludeList" Width="280" Height="100" Background="{StaticResource BrushInput}" Foreground="{StaticResource BrushText}" Margin="0,0,8,0"
+                             ToolTip="Basenames listed under exclude: in Widget Photos\featured-people.txt."/>
+                    <Button Content="Show a hidden photo again" Style="{StaticResource SecondaryButton}" VerticalAlignment="Top" Click="RemoveExclude_OnClick"
+                            ToolTip="Remove the selected exclude: line from featured-people.txt and run Update-FeaturedPhotos.ps1."/>
                   </StackPanel>
-                  <TextBlock Text="Pinned photos" Style="{StaticResource Heading2}"/>
-                  <ListBox x:Name="PinnedList" Height="80" Background="{StaticResource BrushInput}" Foreground="{StaticResource BrushText}"/>
-                  <TextBlock Text="Widget.ini" Style="{StaticResource Heading2}"/>
+                  <TextBlock Text="Pinned photos" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,0,0,4"/>
+                  <ListBox x:Name="PinnedList" Height="80" Background="{StaticResource BrushInput}" Foreground="{StaticResource BrushText}"
+                           ToolTip="photo: entries in featured-people.txt (read-only here; use Pin a photo… to add)."/>
+
+                  <TextBlock Text="Look" Style="{StaticResource Heading2}"/>
+                  <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                             Text="Rainmeter skin size and timing — writes only Size, Seconds, and Radius in Photo Widget.ini."/>
                   <StackPanel Margin="0,0,0,4">
-                    <TextBlock Text="Size" Foreground="{StaticResource BrushText}"/>
+                    <TextBlock Text="Photo size (pixels)" Foreground="{StaticResource BrushText}"/>
                     <DockPanel>
                       <TextBlock x:Name="WidgetSizeLabel" DockPanel.Dock="Right" Foreground="{StaticResource BrushMuted}" Width="72"/>
                       <Slider x:Name="WidgetSizeSlider" Minimum="150" Maximum="600" Value="320"
+                              ToolTip="Photo Widget.ini [Variables] Size= (150–600)."
                               ValueChanged="WidgetIni_OnChanged" PreviewMouseLeftButtonUp="WidgetIni_OnCommit" LostMouseCapture="WidgetIni_OnCommit"/>
                     </DockPanel>
                   </StackPanel>
                   <StackPanel Margin="0,0,0,4">
-                    <TextBlock Text="Seconds" Foreground="{StaticResource BrushText}"/>
+                    <TextBlock Text="Seconds per photo" Foreground="{StaticResource BrushText}"/>
                     <DockPanel>
                       <TextBlock x:Name="WidgetSecondsLabel" DockPanel.Dock="Right" Foreground="{StaticResource BrushMuted}" Width="72"/>
                       <Slider x:Name="WidgetSecondsSlider" Minimum="15" Maximum="300" Value="60"
+                              ToolTip="Photo Widget.ini [Variables] Seconds=."
                               ValueChanged="WidgetIni_OnChanged" PreviewMouseLeftButtonUp="WidgetIni_OnCommit" LostMouseCapture="WidgetIni_OnCommit"/>
                     </DockPanel>
                   </StackPanel>
@@ -153,10 +162,18 @@
                     <DockPanel>
                       <TextBlock x:Name="WidgetRadiusLabel" DockPanel.Dock="Right" Foreground="{StaticResource BrushMuted}" Width="72"/>
                       <Slider x:Name="WidgetRadiusSlider" Minimum="0" Maximum="80" Value="28"
+                              ToolTip="Photo Widget.ini [Variables] Radius=."
                               ValueChanged="WidgetIni_OnChanged" PreviewMouseLeftButtonUp="WidgetIni_OnCommit" LostMouseCapture="WidgetIni_OnCommit"/>
                     </DockPanel>
                   </StackPanel>
-                  <TextBlock Text="illustro skins" Style="{StaticResource Heading2}"/>
+
+                  <TextBlock Text="On/off" Style="{StaticResource Heading2}"/>
+                  <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                             Text="Show or hide the Photo Widget and optional illustro skins on the desktop."/>
+                  <CheckBox x:Name="PhotoWidgetOnCheck" Content="Show Photo Widget on desktop" Foreground="{StaticResource BrushText}" Margin="0,0,0,8"
+                            ToolTip="Toggle Rainmeter skin Photo Widget\Photo Widget.ini (unload/load skin)."
+                            Checked="PhotoWidgetOnCheck_Changed" Unchecked="PhotoWidgetOnCheck_Changed"/>
+                  <TextBlock Text="Extra Rainmeter skins (illustro)" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,0,0,4"/>
                   <WrapPanel x:Name="IllustroChecksPanel"/>
                 </StackPanel>
               </Grid>
@@ -166,23 +183,36 @@
           <!-- Photos -->
           <Grid x:Name="PagePhotos" Visibility="Collapsed">
             <StackPanel>
-              <TextBlock Text="Widget photo tools" Style="{StaticResource Heading1}"/>
-              <TextBlock Style="{StaticResource HelperText}"
-                         Text="Maintain the widget photo pool under Widget Photos—refresh slots only, not the Featured set from Update-FeaturedPhotos.ps1."/>
+              <TextBlock Text="Photos" Style="{StaticResource Heading1}"/>
+              <TextBlock Text="Fix photos" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+              <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                         Text="Correct orientation or format under Widget Photos (copies only)."/>
+              <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                  <Button Content="Straighten Featured JPGs" Style="{StaticResource SecondaryButton}" Click="StraightenFeatured_OnClick"
+                          ToolTip="Run scripts\Straighten-FeaturedJpg.ps1 on Widget Photos\Featured (EXIF rotation)."/>
+                  <Button Content="Convert HEIC to JPG in folder…" Style="{StaticResource SecondaryButton}" Click="ConvertHeicFolder_OnClick"
+                          ToolTip="Copy HEIC/HEIF files in a chosen folder to JPG via _sort-tools\photo_hub\convert_one.py (originals kept)."/>
+                </StackPanel>
+              </Border>
+              <TextBlock Text="Refresh widget pools" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+              <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                         Text="Replace widget-NN.jpg / people-NN.jpg slots in Widget Photos only—not the Featured set from Update-FeaturedPhotos.ps1."/>
               <Border Style="{StaticResource Card}">
                 <StackPanel>
-                  <Button Content="Straighten Featured JPGs (EXIF)" Style="{StaticResource SecondaryButton}" Click="StraightenFeatured_OnClick"/>
-                  <Button Content="Convert HEIC → JPG in folder…" Style="{StaticResource SecondaryButton}" Click="ConvertHeicFolder_OnClick"/>
-                  <TextBlock Text="Refresh widget photo pool" Style="{StaticResource Heading2}" Margin="0,8,0,8"/>
                   <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                    <TextBlock Text="From backup count" VerticalAlignment="Center" Foreground="{StaticResource BrushHelper}" Margin="0,0,8,0"/>
-                    <TextBox x:Name="WidgetBackupCountBox" Width="56" Text="24" Style="{StaticResource FieldBox}" Margin="0"/>
-                    <Button Content="Refresh from backup" Style="{StaticResource PrimaryButton}" Click="RefreshWidgetFromBackup_OnClick"/>
+                    <TextBlock Text="Backup photos to add" VerticalAlignment="Center" Foreground="{StaticResource BrushHelper}" Margin="0,0,8,0"/>
+                    <TextBox x:Name="WidgetBackupCountBox" Width="56" Text="24" Style="{StaticResource FieldBox}" Margin="0"
+                             ToolTip="How many random iPhone Backup photos become widget-NN.jpg files."/>
+                    <Button Content="Refresh from backup" Style="{StaticResource PrimaryButton}" Click="RefreshWidgetFromBackup_OnClick"
+                            ToolTip="Copy new widget-NN.jpg files into Pictures\Widget Photos from iPhone Backup."/>
                   </StackPanel>
                   <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Per featured person" VerticalAlignment="Center" Foreground="{StaticResource BrushHelper}" Margin="0,0,8,0"/>
-                    <TextBox x:Name="WidgetPeoplePerBox" Width="56" Text="3" Style="{StaticResource FieldBox}" Margin="0"/>
-                    <Button Content="Refresh from People" Style="{StaticResource PrimaryButton}" Click="RefreshWidgetFromPeople_OnClick"/>
+                    <TextBox x:Name="WidgetPeoplePerBox" Width="56" Text="3" Style="{StaticResource FieldBox}" Margin="0"
+                             ToolTip="How many photos per enabled featured person become people-NN.jpg files."/>
+                    <Button Content="Refresh from People" Style="{StaticResource PrimaryButton}" Click="RefreshWidgetFromPeople_OnClick"
+                            ToolTip="Copy photos from Pictures\People\_face-groups into Widget Photos as people-NN.jpg."/>
                   </StackPanel>
                 </StackPanel>
               </Border>
@@ -192,42 +222,71 @@
           <!-- iPhone -->
           <Grid x:Name="PageIPhone" Visibility="Collapsed">
             <StackPanel>
-              <TextBlock Text="iPhone backup" Style="{StaticResource Heading1}"/>
-              <TextBlock Style="{StaticResource HelperText}" Text="Sync copies new media into the backup folder, then sort that folder in Photo Hub."/>
-              <Border Style="{StaticResource Card}">
+              <TextBlock Text="iPhone" Style="{StaticResource Heading1}"/>
+              <TextBlock Text="Back up iPhone" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+              <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                         Text="Copy new media from your phone into the backup folder (does not delete phone originals)."/>
+              <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                 <StackPanel>
                   <DockPanel Margin="0,0,0,8">
-                    <Button DockPanel.Dock="Right" Content="Browse…" Style="{StaticResource SecondaryButton}" Click="BrowseIPhoneBackup_OnClick"/>
-                    <TextBox x:Name="IPhoneBackupBox" Style="{StaticResource FieldBox}" Margin="0"/>
+                    <Button DockPanel.Dock="Right" Content="Choose backup folder…" Style="{StaticResource SecondaryButton}" Click="BrowseIPhoneBackup_OnClick"
+                            ToolTip="Folder used by iPhone Photo Sync and as the default Sort source (Pictures\iPhone Backup)."/>
+                    <TextBox x:Name="IPhoneBackupBox" Style="{StaticResource FieldBox}" Margin="0"
+                             ToolTip="iPhone backup destination path."/>
                   </DockPanel>
                   <TextBlock x:Name="BackupStatusText" Foreground="{StaticResource BrushMuted}" TextWrapping="Wrap" Margin="0,0,0,12"/>
                   <WrapPanel>
-                    <Button Content="Refresh status" Style="{StaticResource SecondaryButton}" Click="RefreshBackupStatus_OnClick"/>
-                    <Button Content="Sync (headless)" Style="{StaticResource PrimaryButton}" Click="RunHeadlessSync_OnClick"/>
-                    <Button Content="Open sync app" Style="{StaticResource SecondaryButton}" Click="LaunchSyncGui_OnClick"/>
-                    <Button Content="Sort backup in Photo Hub" Style="{StaticResource SecondaryButton}" Click="GoSortAfterSync_OnClick"/>
+                    <Button Content="Refresh status" Style="{StaticResource SecondaryButton}" Click="RefreshBackupStatus_OnClick"
+                            ToolTip="Re-read sync state from iPhone Photo Sync (partial files, last run)."/>
+                    <Button Content="Sync now" Style="{StaticResource PrimaryButton}" Click="RunHeadlessSync_OnClick"
+                            ToolTip="Run iPhone Photo Sync.exe --photo-hub-cli sync (headless backup)."/>
+                    <Button Content="Open full sync app" Style="{StaticResource SecondaryButton}" Click="LaunchSyncGui_OnClick"
+                            ToolTip="Launch iPhone Photo Sync with its normal window."/>
                   </WrapPanel>
                 </StackPanel>
               </Border>
+              <TextBlock Text="After backup" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+              <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                         Text="Jump to Sort with the backup folder loaded."/>
+              <Button Content="Sort new photos" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Click="GoSortAfterSync_OnClick"
+                      ToolTip="Switch to Sort tab and set the scan folder to the backup path above."/>
             </StackPanel>
           </Grid>
 
           <!-- Find -->
           <Grid x:Name="PageFind" Visibility="Collapsed">
             <StackPanel>
-              <TextBlock Text="Find photos" Style="{StaticResource Heading1}"/>
-              <TextBlock Style="{StaticResource HelperText}" Text="Search face-group folders by person, year, or file name, then open a match in Explorer."/>
+              <TextBlock Text="Find" Style="{StaticResource Heading1}"/>
+              <TextBlock Style="{StaticResource HelperText}" Text="Search Pictures\People\_face-groups by person, August pair, year folder, or file name."/>
               <Border Style="{StaticResource Card}">
                 <StackPanel>
                   <UniformGrid Columns="2">
-                    <TextBox x:Name="FindPersonBox" Style="{StaticResource FieldBox}"/>
-                    <TextBox x:Name="FindPairBox" Style="{StaticResource FieldBox}"/>
-                    <TextBox x:Name="FindYearBox" Style="{StaticResource FieldBox}"/>
-                    <TextBox x:Name="FindFileBox" Style="{StaticResource FieldBox}"/>
+                    <StackPanel Margin="0,0,4,8">
+                      <TextBlock Text="Person name" Foreground="{StaticResource BrushHelper}" FontSize="12"/>
+                      <TextBox x:Name="FindPersonBox" Style="{StaticResource FieldBox}"
+                               ToolTip="Substring match on _face-groups folder name."/>
+                    </StackPanel>
+                    <StackPanel Margin="4,0,0,8">
+                      <TextBlock Text="With August (pair)" Foreground="{StaticResource BrushHelper}" FontSize="12"/>
+                      <TextBox x:Name="FindPairBox" Style="{StaticResource FieldBox}"
+                               ToolTip="Second person name when both appear in the same photo folder."/>
+                    </StackPanel>
+                    <StackPanel Margin="0,0,4,8">
+                      <TextBlock Text="Year" Foreground="{StaticResource BrushHelper}" FontSize="12"/>
+                      <TextBox x:Name="FindYearBox" Style="{StaticResource FieldBox}"
+                               ToolTip="Year subfolder under Pictures\People (e.g. 2025)."/>
+                    </StackPanel>
+                    <StackPanel Margin="4,0,0,8">
+                      <TextBlock Text="File name" Foreground="{StaticResource BrushHelper}" FontSize="12"/>
+                      <TextBox x:Name="FindFileBox" Style="{StaticResource FieldBox}"
+                               ToolTip="Substring match on file basename in person folders."/>
+                    </StackPanel>
                   </UniformGrid>
                   <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                    <Button Content="Search" Style="{StaticResource PrimaryButton}" Click="FindPhotos_OnClick"/>
-                    <Button Content="Open in Explorer" Style="{StaticResource SecondaryButton}" Click="OpenFindResult_OnClick"/>
+                    <Button Content="Search" Style="{StaticResource PrimaryButton}" Click="FindPhotos_OnClick"
+                            ToolTip="Search _face-groups; results appear below."/>
+                    <Button Content="Open in Explorer" Style="{StaticResource SecondaryButton}" Click="OpenFindResult_OnClick"
+                            ToolTip="Open the selected result file in Windows Explorer."/>
                     <TextBlock x:Name="FindStatusText" Foreground="{StaticResource BrushMuted}" VerticalAlignment="Center"/>
                   </StackPanel>
                 </StackPanel>
@@ -242,11 +301,13 @@
           <!-- Undo -->
           <Grid x:Name="PageUndo" Visibility="Collapsed">
             <StackPanel>
-              <TextBlock Text="Undo fold log" Style="{StaticResource Heading1}"/>
-              <TextBlock Style="{StaticResource HelperText}" Text="Reverse recent COPY, MERGE, or RENAME lines from _fold-log.txt (COPY undo checks file hash)."/>
+              <TextBlock Text="Undo" Style="{StaticResource Heading1}"/>
+              <TextBlock Style="{StaticResource HelperText}" Text="Reverse recent COPY, MERGE, or RENAME lines from Pictures\People\_fold-log.txt (COPY undo checks SHA-256)."/>
               <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <Button Content="Refresh list" Style="{StaticResource SecondaryButton}" Click="RefreshUndoList_OnClick"/>
-                <Button Content="Undo selected" Style="{StaticResource PrimaryButton}" Click="UndoSelected_OnClick"/>
+                <Button Content="Refresh list" Style="{StaticResource SecondaryButton}" Click="RefreshUndoList_OnClick"
+                        ToolTip="Re-read _fold-log.txt into the list below."/>
+                <Button Content="Undo selected" Style="{StaticResource PrimaryButton}" Click="UndoSelected_OnClick"
+                        ToolTip="Reverse the selected log entry (safe COPY undo only if destination still matches source)."/>
               </StackPanel>
               <Border Style="{StaticResource Card}" Padding="8">
                 <ListView x:Name="UndoList" Background="Transparent" Foreground="{StaticResource BrushText}" BorderThickness="0" MinHeight="320">
@@ -265,9 +326,10 @@
           <!-- Log -->
           <Grid x:Name="PageLog" Visibility="Collapsed">
             <StackPanel>
-              <TextBlock Text="Session log" Style="{StaticResource Heading1}"/>
-              <TextBlock Style="{StaticResource HelperText}" Text="Plain-English progress from sorts, sync, and widget tools."/>
-              <Button Content="Clear" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Click="ClearLog_OnClick"/>
+              <TextBlock Text="Log" Style="{StaticResource Heading1}"/>
+              <TextBlock Style="{StaticResource HelperText}" Text="This session only — sort progress, sync, widget tools, and errors (not written to disk)."/>
+              <Button Content="Clear log" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Click="ClearLog_OnClick"
+                      ToolTip="Clear the text box below; does not affect _fold-log.txt."/>
               <Border Style="{StaticResource Card}" Padding="12">
                 <TextBox x:Name="LogBox" IsReadOnly="True" TextWrapping="Wrap" MinHeight="400"
                          VerticalScrollBarVisibility="Auto" Background="#0E1016" Foreground="#D8DCE8"
@@ -277,6 +339,44 @@
           </Grid>
         </Grid>
       </ScrollViewer>
+
+        <!-- People (own scroll + virtualization; not inside TabScrollHost) -->
+        <Grid x:Name="PagePeople" Visibility="Collapsed">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <TextBlock Grid.Row="0" Text="People" Style="{StaticResource Heading1}"/>
+          <StackPanel Grid.Row="1">
+            <TextBlock Text="Browse people" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+            <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                       Text="Face-group folders under Pictures\People\_face-groups — click a card to select."/>
+          </StackPanel>
+          <StackPanel Grid.Row="2">
+            <TextBlock Text="Fix a person" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+            <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
+                       Text="Actions apply to the selected card above."/>
+          </StackPanel>
+          <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,8">
+            <Button Content="Refresh list" Style="{StaticResource SecondaryButton}" Click="RefreshPeople_OnClick"
+                    ToolTip="Re-scan _face-groups folders and photo counts."/>
+            <Button x:Name="RenamePersonBtn" Content="Rename person…" Style="{StaticResource SecondaryButton}" Click="RenamePerson_OnClick"
+                    ToolTip="Rename the selected folder; logs RENAME to Pictures\People\_fold-log.txt."/>
+            <Button x:Name="MergePersonBtn" Content="Merge into another…" Style="{StaticResource SecondaryButton}" Click="MergePerson_OnClick"
+                    ToolTip="Copy all files from the selected folder into another person folder; logs MERGE lines."/>
+            <Button x:Name="BackfillFaceCropsBtn" Content="Add full photos from face crops" Style="{StaticResource SecondaryButton}" Click="BackfillFaceCrops_OnClick"
+                    ToolTip="Copy full originals for each face_*.jpg crop into the selected folder; logs COPY to _fold-log.txt."/>
+          </StackPanel>
+          <Border Grid.Row="4" Style="{StaticResource Card}" Padding="8">
+            <ListBox x:Name="PeopleGrid" Style="{StaticResource PeopleGridListBox}"
+                     SelectionChanged="PeopleGrid_OnSelectionChanged"
+                     ToolTip="Click a person to select for Rename, Merge, or backfill."/>
+          </Border>
+        </Grid>
+      </Grid>
     </Grid>
 
     <Border x:Name="ToastBorder" Grid.Row="2" Visibility="Collapsed" Margin="24,0,24,16" Padding="14,10"

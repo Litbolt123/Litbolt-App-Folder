@@ -9,6 +9,13 @@ namespace PhotoHub.Services;
 
 public static class UiControls
 {
+    private static async Task LoadChipThumbAsync(Image target, string path)
+    {
+        var bmp = await ThumbnailCache.Shared.GetAsync(path, 72);
+        if (bmp is not null)
+            target.Source = bmp;
+    }
+
     public static BitmapImage? LoadThumb(string? path, int decodeWidth = 160)
     {
         if (string.IsNullOrEmpty(path) || !File.Exists(path))
@@ -37,6 +44,7 @@ public static class UiControls
             IsChecked = isOn,
             Visibility = Visibility.Collapsed,
         };
+        var faceImg = new Image { Stretch = Stretch.UniformToFill };
         var face = new Border
         {
             Width = 36,
@@ -44,12 +52,10 @@ public static class UiControls
             CornerRadius = new CornerRadius(18),
             ClipToBounds = true,
             Background = new SolidColorBrush(LitboltTheme.Panel),
-            Child = new Image
-            {
-                Stretch = Stretch.UniformToFill,
-                Source = LoadThumb(thumbPath, 72),
-            },
+            Child = faceImg,
         };
+        if (!string.IsNullOrEmpty(thumbPath))
+            _ = LoadChipThumbAsync(faceImg, thumbPath);
         var label = new TextBlock
         {
             Text = name,
@@ -133,7 +139,7 @@ public static class UiControls
         };
         var count = new TextBlock
         {
-            Text = $"{person.PhotoCount} photos",
+            Text = person.PhotoCount == 1 ? "1 photo" : $"{person.PhotoCount} photos",
             TextAlignment = TextAlignment.Center,
             FontSize = 11,
             Foreground = new SolidColorBrush(LitboltTheme.Muted),

@@ -7,6 +7,30 @@ Vault index: `C:\Users\Augus\OneDrive\Documents\Obsidian Vault\Atlas\Lessons.md`
 
 Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 
+## WPF People grid scroll jank — sync decode + nested scroll
+
+- **Symptom:** People tab scroll flickers then settles; worse with 70+ folders.
+- **Failed:** `WrapPanel` inside outer `ScrollViewer` with `LoadThumb` on refresh for every card on the UI thread.
+- **Worked:** People page uses its own `ListBox` + `VirtualizingWrapPanel` (`PhotoHub.Panels`), `ScrollViewer.CanContentScroll=False`, fixed 148×172 cards, `PersonFaceImage` + `ThumbnailCache` (LRU, `DecodePixelWidth` 160, `DispatcherPriority.Background`). Other tabs stay in `TabScrollHost`.
+- **Verify:** Scroll People grid with 70+ entries — no layout jump as thumbs load; CPU stays low while scrolling.
+- **Do not regress:** `PagePeople` outside `TabScrollHost`; do not block `RefreshPeople` with synchronous decode for all folders.
+
+## Face-groups photo count — face_* only folders
+
+- **Symptom:** People tab shows **0 photos** while a `face_*.jpg` thumbnail is visible (e.g. BC).
+- **Failed:** Counting only non-`face_` files; many folders only have reference crops from assign/widget tools.
+- **Worked:** `CountPhotosInPersonFolder` — prefer full-image count; if zero, count `face_` / `_face_` crops. Thumbnail picks face crop first.
+- **Verify:** `BC` under `_face-groups` with only `face_1.jpg`…`face_6.jpg` shows **6 photos**.
+- **Do not regress:** `FaceGroupsService.ListPeople`.
+
+## Face-groups backfill — numbered face_*.jpg to full photo
+
+- **Symptom:** Person folder has only `face_1.jpg`…`face_N.jpg` (widget/cluster thumbs); no full originals for count or widget pairing.
+- **Failed:** Guessing from `groups.csv` alone (many photos per group); expecting `face_<basename>.jpg` naming.
+- **Worked:** `FaceCropBackfillService` (People tab **Add full photos from face crops**): SHA1 crop vs `faces_meta.json` crops, `audit\inv.json` for numbered `face_N.jpg`, `face_<basename>.jpg` → People basename, `_fold-log.txt` COPY fallback. COPY + `FoldLogWriter.LogCopy` tag `photo-hub-face-backfill`. One-off script: `Photo Hub/scripts/bc-backfill-full-photos.py`.
+- **Verify:** BC folder has six HEICs plus six face crops; fold-log section `BC face crop full-photo backfill`.
+- **Do not regress:** Copy-only; log every copy; skip if dest basename already exists.
+
 ## Rainmeter Photo Widget.ini — preserve full skin on slider write
 
 - **Symptom:** Moving Size/Seconds/Radius left only three variable lines; Rainmeter reported no meters and deactivated the skin.

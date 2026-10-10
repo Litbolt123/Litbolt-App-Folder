@@ -3,6 +3,11 @@
 - **User:** Build Photo Hub WPF (.NET 8) for face sort / people / Rainmeter widget; place under `Photo Hub/`; match Litbolt App Folder styling, shortcuts, launcher pattern.
 - **Done:** New `Photo Hub/PhotoHub.csproj` (Litbolt.Shell tray/single-instance, dark UI like Local Video Hub, Release → `%LocalAppData%\Programs\PhotoHub\` + Start Menu shortcut via shared `scripts/update-windows-shortcuts.ps1`). Python orchestrator `Pictures\_sort-tools\photo_hub\sort_inbox.py` reuses `audit2.detect` + strict thresholds (0.80/48/0.62/0.08). Wired into solution + App Folder nav (`PhotoHubModule`, settings EXE override). README in `Photo Hub/README.md`.
 
+## 2026-10-10 — Photo Hub People tab photo count
+
+- **User:** Many people show 0 photos despite visible face thumbnails.
+- **Done:** Count full copies when present; else count `face_`/`_face_` crops. Plural "1 photo" fix.
+
 ## 2026-10-10 — Photo Hub UI polish (sidebar, cards, toasts)
 
 - **User:** Dark Litbolt layout refresh—sidebar nav, widget preview, people/find grids, gold primary buttons, top progress + toasts; screenshots per tab.
@@ -125,6 +130,24 @@
 - **Shipped:** Home + Music + Video + Downloader nav; Pop tab out / Redock; Open standalone; Video library player (MediaElement) + LitboltVideo.exe.
 - **Music/Downloader:** external launcher modules to installed EXEs.
 - **Shortcuts:** Desktop + Start Menu after Release build.
+
+## 2026-10-10 — People scroll + UI reorganize
+
+- **Ask:** Fix People tab scroll glitch (virtualize, async thumbs); reorganize all tabs with section headers, plain labels, tooltips; README; Release + commit.
+- **Shipped:** `VirtualizingWrapPanel`, `ThumbnailCache`, `PersonFaceImage`; People `ListBox` off main tab scroll; tab layout/tooltips per spec; `Photo Hub/README.md` updated.
+- **Verify:** Release build → `%LocalAppData%\Programs\PhotoHub\`.
+
+## 2026-10-10 — People tab: backfill full photos from face crops
+
+- **Ask:** Generalize BC backfill — button on People tab for any person; copy only + fold-log.
+- **Shipped:** `FaceCropBackfillService` + **Add full photos from face crops** (select card first). Resolves crops via faces_meta SHA1, `audit\inv.json`, stem basename, fold-log COPY.
+- **Verify:** Select person with only `face_*.jpg` → run button → full files appear; re-run skips with “already present”.
+
+## 2026-10-10 — BC full-photo backfill (face crops)
+
+- **Ask:** For BC’s six `face_*.jpg` crops, resolve each source full photo (face DB / fold log), COPY into `_face-groups\BC`, log only.
+- **Worked:** Mapped crops via `audit\inv.json` (Group 05 - BC) → indices in `faces_meta.json` → six May 2025 HEICs (`IMG_6324`–`IMG_6334`). Copied with `Photo Hub/scripts/bc-backfill-full-photos.py`; six COPY lines in `_fold-log.txt` under `BC face crop full-photo backfill`.
+- **Verify:** Refresh People tab — BC should show 6 full photos (plus crops).
 
 ## 2026-07-20 — Project born
 

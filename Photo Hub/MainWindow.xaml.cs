@@ -231,47 +231,24 @@ public partial class MainWindow : Window, ITrayHost
     private void RefreshPeople()
     {
         var people = FaceGroupsService.ListPeople();
-        PeopleList.ItemsSource = people;
-        PeopleGrid.Children.Clear();
-        foreach (var person in people)
+        var selectedPath = _selectedPerson?.Path;
+        PeopleGrid.ItemsSource = people;
+        if (!string.IsNullOrEmpty(selectedPath))
         {
-            PeopleGrid.Children.Add(UiControls.CreatePeopleGridCard(
-                person,
-                p => SelectPerson(p),
-                p => RenamePersonFor(p),
-                p => MergePersonFor(p)));
+            var match = people.FirstOrDefault(p => p.Path == selectedPath);
+            PeopleGrid.SelectedItem = match;
+            _selectedPerson = match;
         }
     }
 
-    private void SelectPerson(PersonFolder person)
+    private void PeopleGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        _selectedPerson = person;
-        foreach (var child in PeopleGrid.Children)
-        {
-            if (child is Border b)
-            {
-                b.BorderBrush = b.Tag is PersonFolder pf && pf.Path == person.Path
-                    ? new System.Windows.Media.SolidColorBrush(LitboltTheme.Accent)
-                    : new System.Windows.Media.SolidColorBrush(LitboltTheme.ButtonBg);
-            }
-        }
-    }
-
-    private void RenamePersonFor(PersonFolder person)
-    {
-        _selectedPerson = person;
-        RenamePerson_OnClick(this, new RoutedEventArgs());
-    }
-
-    private void MergePersonFor(PersonFolder person)
-    {
-        _selectedPerson = person;
-        MergePerson_OnClick(this, new RoutedEventArgs());
+        _selectedPerson = PeopleGrid.SelectedItem as PersonFolder;
     }
 
     private void RenamePerson_OnClick(object sender, RoutedEventArgs e)
     {
-        var person = _selectedPerson ?? PeopleList.SelectedItem as PersonFolder;
+        var person = _selectedPerson ?? PeopleGrid.SelectedItem as PersonFolder;
         if (person is null)
         {
             MessageBox.Show("Select a person folder first.", "Photo Hub", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -301,9 +278,41 @@ public partial class MainWindow : Window, ITrayHost
         }
     }
 
+    private void BackfillFaceCrops_OnClick(object sender, RoutedEventArgs e)
+    {
+        var person = _selectedPerson ?? PeopleGrid.SelectedItem as PersonFolder;
+        if (person is null)
+        {
+            MessageBox.Show("Select a person folder first (click a card).", "Photo Hub", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        if (MessageBox.Show(
+                $"Copy full originals for each face crop in \"{person.Name}\"?\n\nSources: face database, inventory, or _fold-log.txt. Copies only; logged to _fold-log.txt.",
+                "Add full photos from face crops",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question) != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            var result = FaceCropBackfillService.BackfillPersonFolder(person.Path);
+            var summary = $"Copied {result.Copied}, already present {result.SkippedPresent}, unresolved {result.Unresolved}.";
+            AppendLog($"Face backfill {person.Name}: {summary}");
+            if (result.Messages.Count > 0)
+                AppendLog(string.Join(Environment.NewLine, result.Messages.Take(8)), result.Unresolved > 0);
+            ShowToast(summary);
+            RefreshPeople();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, "Backfill failed", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void MergePerson_OnClick(object sender, RoutedEventArgs e)
     {
-        var from = _selectedPerson ?? PeopleList.SelectedItem as PersonFolder;
+        var from = _selectedPerson ?? PeopleGrid.SelectedItem as PersonFolder;
         if (from is null)
         {
             MessageBox.Show("Select the folder to merge away.", "Photo Hub", MessageBoxButton.OK, MessageBoxImage.Information);

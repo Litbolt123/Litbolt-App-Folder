@@ -78,6 +78,7 @@ public partial class MainWindow
                 IsChecked = on,
                 Foreground = System.Windows.Media.Brushes.White,
                 Margin = new Thickness(0, 4, 16, 4),
+                ToolTip = $"Load or unload Rainmeter skin: {skin.IniPath}",
             };
             cb.Checked += (_, _) => SetIllustro(skin.ConfigKey, true);
             cb.Unchecked += (_, _) => SetIllustro(skin.ConfigKey, false);

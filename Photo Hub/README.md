@@ -18,16 +18,47 @@ dotnet build -c Release
 
 **Release** syncs to `%LocalAppData%\Programs\PhotoHub\` and refreshes the **Start Menu** shortcut only (no Desktop shortcut).
 
-## How to use (numbered)
+## Tabs (what each section does)
 
-1. **iPhone** — Confirm backup folder (`Pictures\iPhone Backup`). **Sync (headless)** runs iPhone Photo Sync with `--photo-hub-cli sync`. Fix any `.partial` stuck files, then **Sort backup in Photo Hub**.
-2. **Sort new photos** — Scan the backup (or another folder). Strict matching: det ≥ 0.80, face ≥ 48 px, match ≥ 0.62, margin ≥ 0.08. Matches are **copied** into person folders; logged in `Pictures\People\_fold-log.txt`. `Important` is never scanned. Assign unknown faces by name.
-3. **People** — Rename or merge folders (copies only; originals kept). Logged for undo.
-4. **Photos** — **Straighten Featured JPGs**, **HEIC → JPG** in a folder (copies only), **Refresh from backup** (`widget-NN.jpg`), **Refresh from People** (`people-NN.jpg`).
-5. **Widget** — Featured people/pairs, excludes, pinned `photo:` lines, Rainmeter size/seconds/radius, Photo Widget on/off, illustro toggles. **Save featured list**, then **Update widget** (`Update-FeaturedPhotos.ps1`).
-6. **Find** — Search `_face-groups` by person, year, file name; open in Explorer.
-7. **Undo** — Pick a recent COPY/RENAME/MERGE line. COPY undo **deletes the destination only if SHA-256 still matches the source**; otherwise it skips and warns.
-8. **Log** — Sort progress, widget tools, and errors.
+### Sort
+
+1. **Sort new photos** — Choose folder (default `Pictures\iPhone Backup`), then **Scan and sort**. Runs `sort_inbox.py`; copies into `_face-groups`; logs to `Pictures\People\_fold-log.txt`.
+2. **Name unknown faces** — After a sort, assign each unknown face to a person folder by name.
+
+### People
+
+1. **Browse people** — Virtualized grid of `_face-groups` folders (async thumbnails). Click a card to select.
+2. **Fix a person** — **Refresh list**, **Rename person…**, **Merge into another…**, **Add full photos from face crops** (selected card only). All folder changes log to `_fold-log.txt`.
+
+### Widget
+
+- **Update widget** (top) — Runs `Widget Photos\Update-FeaturedPhotos.ps1`.
+- **Who's featured** — Toggle people and August pairs; **Save featured list** → `featured-people.txt`.
+- **Specific photos** — **Pin a photo…** (`photo:` lines), **Hide this photo from the widget**, excluded list, **Show a hidden photo again**.
+- **Look** — Sliders for `Photo Widget.ini` Size, Seconds, Radius (and `@Resources\current-photo.inc` when hiding).
+- **On/off** — Photo Widget skin visibility; illustro skin checkboxes.
+
+### Photos
+
+1. **Fix photos** — Straighten Featured JPGs; convert HEIC to JPG in a folder (copies only).
+2. **Refresh widget pools** — **Refresh from backup** (`widget-NN.jpg`); **Refresh from People** (`people-NN.jpg`) in `Widget Photos` only.
+
+### iPhone
+
+1. **Back up iPhone** — Backup path, status, **Sync now**, **Open full sync app**.
+2. **After backup** — **Sort new photos** (jumps to Sort with backup folder).
+
+### Find
+
+Search `_face-groups` by person, August pair, year, or file name; open a match in Explorer.
+
+### Undo
+
+Reverse recent COPY / MERGE / RENAME from `_fold-log.txt` (COPY undo checks SHA-256).
+
+### Log
+
+In-app session log only (not `_fold-log.txt`).
 
 ## Litbolt's App Folder
 

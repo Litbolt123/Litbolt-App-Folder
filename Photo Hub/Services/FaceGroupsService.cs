@@ -4,6 +4,33 @@ public sealed record PersonFolder(string Name, string Path, int PhotoCount, stri
 
 public static class FaceGroupsService
 {
+    public static bool IsFaceCropFileName(string fileName)
+    {
+        return fileName.StartsWith("face_", StringComparison.OrdinalIgnoreCase)
+               || fileName.StartsWith("_face_", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Full copies in folder; if only face_* reference crops exist, count those instead.</summary>
+    public static int CountPhotosInPersonFolder(string personDir)
+    {
+        var images = Directory.GetFiles(personDir)
+            .Where(f => PhotoPaths.ImageExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+            .ToList();
+        var fullPhotos = images.Where(f => !IsFaceCropFileName(Path.GetFileName(f))).ToList();
+        if (fullPhotos.Count > 0)
+            return fullPhotos.Count;
+        return images.Count(f => IsFaceCropFileName(Path.GetFileName(f)));
+    }
+
+    public static string? PickPersonThumbnail(string personDir)
+    {
+        var images = Directory.GetFiles(personDir)
+            .Where(f => PhotoPaths.ImageExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
+            .ToList();
+        return images.FirstOrDefault(f => IsFaceCropFileName(Path.GetFileName(f)))
+               ?? images.FirstOrDefault(f => !IsFaceCropFileName(Path.GetFileName(f)));
+    }
+
     public static IReadOnlyList<PersonFolder> ListPeople()
     {
         if (!Directory.Exists(PhotoPaths.FaceGroups))
@@ -15,13 +42,11 @@ public static class FaceGroupsService
             var name = Path.GetFileName(dir);
             if (name.StartsWith('_'))
                 continue;
-            var files = Directory.GetFiles(dir)
-                .Where(f => PhotoPaths.ImageExtensions.Contains(Path.GetExtension(f).ToLowerInvariant()))
-                .Where(f => !Path.GetFileName(f).StartsWith("face_", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-            var thumb = Directory.GetFiles(dir)
-                .FirstOrDefault(f => Path.GetFileName(f).StartsWith("face_", StringComparison.OrdinalIgnoreCase));
-            list.Add(new PersonFolder(name, dir, files.Count, thumb));
+            list.Add(new PersonFolder(
+                name,
+                dir,
+                CountPhotosInPersonFolder(dir),
+                PickPersonThumbnail(dir)));
         }
         return list;
     }
