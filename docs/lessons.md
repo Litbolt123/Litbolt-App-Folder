@@ -31,6 +31,14 @@ Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 - **Verify:** `powershell -File today-feed.ps1` exits 0 from `Skins\Litbolt\feeders`.
 - **Do not regress:** Feeder scripts under `rainmeter-skins/Litbolt/feeders`.
 
+## Photo Hub Widget tab — long single column scroll
+
+- **Symptom:** Featured people list pushes preview/sliders/update to bottom; hard to use on laptop screens.
+- **Failed:** Single `StackPanel` inside `TabScrollHost` with one tall column of checkboxes.
+- **Worked:** `PageWidget` sibling to `TabScrollHost` (like People): fixed 296px left card, right `ScrollViewer`, bottom sticky apply bar; chip wrap + search/filter; ini/featured batch via **Apply changes to widget**.
+- **Verify:** At 1366×768, preview + apply bar visible without scrolling left column; pending count enables pulsing gold Apply.
+- **Do not regress:** Widget page must not live only inside `TabScrollHost`.
+
 ## HWiNFO free edition — Gadget registry vs shared-memory plugin
 
 - **Symptom:** CPU/GPU readings stop after ~12 hours on free HWiNFO when using the HWiNFO Rainmeter plugin (shared memory).

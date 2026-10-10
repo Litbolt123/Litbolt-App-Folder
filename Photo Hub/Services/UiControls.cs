@@ -87,7 +87,11 @@ public static class UiControls
         {
             var on = btn.IsChecked == true;
             border.BorderBrush = new SolidColorBrush(on ? LitboltTheme.Accent : LitboltTheme.ButtonBg);
+            border.BorderThickness = new Thickness(on ? 2 : 1);
             border.Background = new SolidColorBrush(on ? Color.FromRgb(0x3D, 0x34, 0x28) : LitboltTheme.Panel);
+            label.Foreground = on
+                ? new SolidColorBrush(LitboltTheme.Accent)
+                : Brushes.White;
         }
         RefreshVisual();
         border.MouseLeftButtonUp += (_, _) =>
@@ -233,5 +237,65 @@ public static class UiControls
         };
         card.MouseLeftButtonUp += (_, _) => onSelect(hit);
         return card;
+    }
+
+    public static Border CreateWidgetThumbChip(string label, string? thumbPath, Action onRemove)
+    {
+        var img = new Image { Width = 48, Height = 48, Stretch = Stretch.UniformToFill };
+        var clip = new Border
+        {
+            Width = 48,
+            Height = 48,
+            CornerRadius = new CornerRadius(8),
+            ClipToBounds = true,
+            Background = new SolidColorBrush(LitboltTheme.Panel),
+            Child = img,
+        };
+        if (!string.IsNullOrEmpty(thumbPath) && File.Exists(thumbPath))
+            _ = LoadChipThumbAsync(img, thumbPath);
+        else
+        {
+            clip.Child = new TextBlock
+            {
+                Text = label.Length > 4 ? label[..4] : label,
+                FontSize = 10,
+                Foreground = new SolidColorBrush(LitboltTheme.Muted),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+        }
+
+        var remove = new Button
+        {
+            Content = "✕",
+            Width = 20,
+            Height = 20,
+            Padding = new Thickness(0),
+            FontSize = 11,
+            Margin = new Thickness(4, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Top,
+            Cursor = Cursors.Hand,
+            Background = Brushes.Transparent,
+            Foreground = new SolidColorBrush(LitboltTheme.Muted),
+            BorderThickness = new Thickness(0),
+            ToolTip = "Remove",
+        };
+        remove.Click += (_, _) => onRemove();
+
+        var row = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        row.Children.Add(clip);
+        row.Children.Add(remove);
+
+        return new Border
+        {
+            Margin = new Thickness(0, 0, 8, 8),
+            Padding = new Thickness(6),
+            CornerRadius = new CornerRadius(10),
+            BorderThickness = new Thickness(1),
+            BorderBrush = new SolidColorBrush(LitboltTheme.ButtonBg),
+            Background = new SolidColorBrush(LitboltTheme.Panel),
+            Child = row,
+            ToolTip = label,
+        };
     }
 }

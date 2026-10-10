@@ -7,7 +7,7 @@ namespace PhotoHub;
 
 public partial class MainWindow
 {
-    public void CaptureUiScreenshots(string outputDir)
+    public void CaptureUiScreenshots(string outputDir, string? onlyTab = null)
     {
         Directory.CreateDirectory(outputDir);
         var pages = new[]
@@ -21,8 +21,10 @@ public partial class MainWindow
             (PhotoHubPage.Undo, "undo"),
             (PhotoHubPage.Log, "log"),
         };
-        Width = 1180;
-        Height = 800;
+        if (!string.IsNullOrEmpty(onlyTab))
+            pages = pages.Where(p => p.Item2.Equals(onlyTab, StringComparison.OrdinalIgnoreCase)).ToArray();
+        Width = 1366;
+        Height = 768;
         foreach (var (page, name) in pages)
         {
             ShowPage(page);

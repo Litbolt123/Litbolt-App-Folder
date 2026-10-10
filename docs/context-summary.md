@@ -156,6 +156,11 @@
 - **Config:** HWiNFO Gadget registry indices in `Helios Health\@Resources\sensors.inc` (not shared-memory plugin); Google iCal URL in `Today\@Resources\calendar-config.json`; CurseForge in `stats-config.json`; Etsy placeholder until API wired.
 - **Verify:** Rainmeter Manage shows Litbolt skins (unchecked); feeders write `data.inc`; Photo Hub Widget tab lists four Litbolt checkboxes; `register-tasks.ps1` elevated for schedules.
 
+## 2026-10-10 — Photo Hub Widget tab layout (two columns + apply bar)
+
+- **Ask:** Redesign Widget tab — fixed left rail (preview, actions, look, on/off), scrollable right (featured chips, pairs, pinned/hidden strips), sticky apply bar with pending count; 1366×768; screenshot + Release + commit.
+- **Done:** `PageWidget` outside `TabScrollHost`; pending changes for featured/pairs + ini sliders; **Apply changes to widget** saves, writes ini, runs Update-FeaturedPhotos; Next photo bang; illustro in Expander.
+
 ## 2026-10-10 — Helios Health: HWiNFO Gadget registry
 
 - **Ask:** Drop shared-memory HWiNFO plugin (12h free limit); use Reporting to Gadget per Rainmeter docs.

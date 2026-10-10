@@ -168,6 +168,10 @@ public static class RainmeterService
 
     public static void RefreshPhotoWidget() => RunBang("!Refresh \"Photo Widget\"");
 
+    /// <summary>Advance to the next photo (same as clicking the desktop widget).</summary>
+    public static void AdvancePhotoWidget() =>
+        RunBang("!UpdateMeasure \"Photo Widget\\Photo Widget.ini\" \"MeasurePhoto\"");
+
     public static void SetPhotoWidgetActive(bool active) =>
         RunBang(active
             ? "!ActivateConfig \"Photo Widget\\Photo Widget.ini\""

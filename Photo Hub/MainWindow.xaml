@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:services="clr-namespace:PhotoHub.Services"
         Title="Photo Hub"
-        Width="1180" Height="800"
-        MinWidth="960" MinHeight="640"
+        Width="1366" Height="768"
+        MinWidth="1024" MinHeight="700"
         Background="{StaticResource BrushBg}"
         FontFamily="{StaticResource UiFont}"
         WindowStartupLocation="CenterScreen"
@@ -78,107 +78,6 @@
               <Border Style="{StaticResource Card}">
                 <WrapPanel x:Name="UnknownFacesPanel"/>
               </Border>
-            </StackPanel>
-          </Grid>
-
-          <!-- Widget -->
-          <Grid x:Name="PageWidget" Visibility="Collapsed">
-            <StackPanel>
-              <TextBlock Text="Widget" Style="{StaticResource Heading1}"/>
-              <Button Content="Update widget" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Click="UpdateWidget_OnClick" Margin="0,0,0,12"
-                      ToolTip="Run Widget Photos\Update-FeaturedPhotos.ps1 to rebuild the rotation pool from featured-people.txt and your person folders."/>
-              <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
-                         Text="Control the Rainmeter Photo Widget: who appears, which photos are pinned or hidden, and how the skin looks."/>
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="280"/>
-                  <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0" HorizontalAlignment="Left">
-                  <StackPanel HorizontalAlignment="Center">
-                    <TextBlock Text="Live preview" FontWeight="SemiBold" Foreground="{StaticResource BrushText}" Margin="0,0,0,12"/>
-                    <Border x:Name="WidgetPreviewShadow" Background="#40000000" CornerRadius="12" Padding="0" Margin="4,4,0,0">
-                      <Border x:Name="WidgetPreviewClip" CornerRadius="12" ClipToBounds="True" Width="200" Height="200">
-                        <Image x:Name="WidgetPreviewImage" Stretch="UniformToFill"/>
-                      </Border>
-                    </Border>
-                    <TextBlock x:Name="CurrentWidgetPhotoText" Foreground="{StaticResource BrushMuted}" TextWrapping="Wrap"
-                               FontSize="11" Margin="0,12,0,0" MaxWidth="240" TextAlignment="Center"/>
-                  </StackPanel>
-                </Border>
-                <StackPanel Grid.Column="1">
-                  <TextBlock Text="Who's featured" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
-                  <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
-                             Text="Toggle people and August pairs, then save the list before updating the widget."/>
-                  <WrapPanel x:Name="WidgetPeopleChecks"/>
-                  <TextBlock Text="Pairs with August" Style="{StaticResource Heading2}"/>
-                  <WrapPanel x:Name="WidgetPairChecks"/>
-                  <Button Content="Save featured list" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Click="SaveFeatured_OnClick"
-                          ToolTip="Write Widget Photos\featured-people.txt (people, pairs, pinned photo: lines, and excludes)."/>
-
-                  <TextBlock Text="Specific photos" Style="{StaticResource Heading2}"/>
-                  <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
-                             Text="Pin a file, hide what is on screen now, or allow a previously excluded name again."/>
-                  <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                    <Button Content="Pin a photo…" Style="{StaticResource SecondaryButton}" Click="AddWidgetPhoto_OnClick"
-                            ToolTip="Add a photo: line to featured-people.txt so Update-FeaturedPhotos.ps1 always includes that file."/>
-                    <Button Content="Hide this photo from the widget" Style="{StaticResource SecondaryButton}" Click="HideCurrentWidgetPhoto_OnClick"
-                            ToolTip="Exclude the photo shown in the preview from rotation; updates featured-people.txt, Featured copies, and @Resources\current-photo.inc."/>
-                  </StackPanel>
-                  <TextBlock Text="Excluded file names" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,0,0,4"/>
-                  <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                    <ListBox x:Name="ExcludeList" Width="280" Height="100" Background="{StaticResource BrushInput}" Foreground="{StaticResource BrushText}" Margin="0,0,8,0"
-                             ToolTip="Basenames listed under exclude: in Widget Photos\featured-people.txt."/>
-                    <Button Content="Show a hidden photo again" Style="{StaticResource SecondaryButton}" VerticalAlignment="Top" Click="RemoveExclude_OnClick"
-                            ToolTip="Remove the selected exclude: line from featured-people.txt and run Update-FeaturedPhotos.ps1."/>
-                  </StackPanel>
-                  <TextBlock Text="Pinned photos" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,0,0,4"/>
-                  <ListBox x:Name="PinnedList" Height="80" Background="{StaticResource BrushInput}" Foreground="{StaticResource BrushText}"
-                           ToolTip="photo: entries in featured-people.txt (read-only here; use Pin a photo… to add)."/>
-
-                  <TextBlock Text="Look" Style="{StaticResource Heading2}"/>
-                  <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
-                             Text="Rainmeter skin size and timing — writes only Size, Seconds, and Radius in Photo Widget.ini."/>
-                  <StackPanel Margin="0,0,0,4">
-                    <TextBlock Text="Photo size (pixels)" Foreground="{StaticResource BrushText}"/>
-                    <DockPanel>
-                      <TextBlock x:Name="WidgetSizeLabel" DockPanel.Dock="Right" Foreground="{StaticResource BrushMuted}" Width="72"/>
-                      <Slider x:Name="WidgetSizeSlider" Minimum="150" Maximum="600" Value="320"
-                              ToolTip="Photo Widget.ini [Variables] Size= (150–600)."
-                              ValueChanged="WidgetIni_OnChanged" PreviewMouseLeftButtonUp="WidgetIni_OnCommit" LostMouseCapture="WidgetIni_OnCommit"/>
-                    </DockPanel>
-                  </StackPanel>
-                  <StackPanel Margin="0,0,0,4">
-                    <TextBlock Text="Seconds per photo" Foreground="{StaticResource BrushText}"/>
-                    <DockPanel>
-                      <TextBlock x:Name="WidgetSecondsLabel" DockPanel.Dock="Right" Foreground="{StaticResource BrushMuted}" Width="72"/>
-                      <Slider x:Name="WidgetSecondsSlider" Minimum="15" Maximum="300" Value="60"
-                              ToolTip="Photo Widget.ini [Variables] Seconds=."
-                              ValueChanged="WidgetIni_OnChanged" PreviewMouseLeftButtonUp="WidgetIni_OnCommit" LostMouseCapture="WidgetIni_OnCommit"/>
-                    </DockPanel>
-                  </StackPanel>
-                  <StackPanel Margin="0,0,0,8">
-                    <TextBlock Text="Corner radius" Foreground="{StaticResource BrushText}"/>
-                    <DockPanel>
-                      <TextBlock x:Name="WidgetRadiusLabel" DockPanel.Dock="Right" Foreground="{StaticResource BrushMuted}" Width="72"/>
-                      <Slider x:Name="WidgetRadiusSlider" Minimum="0" Maximum="80" Value="28"
-                              ToolTip="Photo Widget.ini [Variables] Radius=."
-                              ValueChanged="WidgetIni_OnChanged" PreviewMouseLeftButtonUp="WidgetIni_OnCommit" LostMouseCapture="WidgetIni_OnCommit"/>
-                    </DockPanel>
-                  </StackPanel>
-
-                  <TextBlock Text="On/off" Style="{StaticResource Heading2}"/>
-                  <TextBlock Style="{StaticResource HelperText}" Margin="0,0,0,8"
-                             Text="Show or hide the Photo Widget, Litbolt widgets, and optional illustro skins on the desktop."/>
-                  <CheckBox x:Name="PhotoWidgetOnCheck" Content="Show Photo Widget on desktop" Foreground="{StaticResource BrushText}" Margin="0,0,0,8"
-                            ToolTip="Toggle Rainmeter skin Photo Widget\Photo Widget.ini (unload/load skin)."
-                            Checked="PhotoWidgetOnCheck_Changed" Unchecked="PhotoWidgetOnCheck_Changed"/>
-                  <TextBlock Text="Litbolt widgets" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,8,0,4"/>
-                  <WrapPanel x:Name="LitboltChecksPanel"/>
-                  <TextBlock Text="Extra Rainmeter skins (illustro)" Foreground="{StaticResource BrushText}" FontSize="13" Margin="0,8,0,4"/>
-                  <WrapPanel x:Name="IllustroChecksPanel"/>
-                </StackPanel>
-              </Grid>
             </StackPanel>
           </Grid>
 
@@ -376,6 +275,106 @@
             <ListBox x:Name="PeopleGrid" Style="{StaticResource PeopleGridListBox}"
                      SelectionChanged="PeopleGrid_OnSelectionChanged"
                      ToolTip="Click a person to select for Rename, Merge, or backfill."/>
+          </Border>
+        </Grid>
+
+        <!-- Widget (fixed left rail + scrollable right + sticky apply bar) -->
+        <Grid x:Name="PageWidget" Visibility="Collapsed">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid Grid.Row="0" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="296"/>
+              <ColumnDefinition Width="16"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.Column="0" Style="{StaticResource Card}" Padding="16" VerticalAlignment="Stretch">
+              <StackPanel>
+                <TextBlock Text="Widget" Style="{StaticResource Heading1}" Margin="0,0,0,4"/>
+                <TextBlock Text="Live preview" FontWeight="SemiBold" Foreground="{StaticResource BrushText}" Margin="0,0,0,8"/>
+                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,8">
+                  <Border x:Name="WidgetPreviewShadow" Background="#40000000" CornerRadius="12" Padding="0" Margin="2,2,0,0">
+                    <Border x:Name="WidgetPreviewClip" CornerRadius="12" ClipToBounds="True" Width="200" Height="200">
+                      <Image x:Name="WidgetPreviewImage" Stretch="UniformToFill"/>
+                    </Border>
+                  </Border>
+                  <TextBlock x:Name="CurrentWidgetPhotoText" Foreground="{StaticResource BrushMuted}" TextWrapping="Wrap"
+                             FontSize="11" Margin="0,8,0,0" MaxWidth="260" TextAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,16">
+                  <Button Content="Hide this photo" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Click="HideCurrentWidgetPhoto_OnClick"
+                          ToolTip="Exclude the preview photo from rotation (writes featured-people.txt immediately)."/>
+                  <Button Content="Next photo" Style="{StaticResource SecondaryButton}" Margin="0" Click="NextWidgetPhoto_OnClick"
+                          ToolTip="Advance the Rainmeter widget to the next photo."/>
+                </StackPanel>
+                <TextBlock Text="Look" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+                <StackPanel Margin="0,0,0,8">
+                  <TextBlock Text="Size" Foreground="{StaticResource BrushText}" FontSize="13"/>
+                  <DockPanel Margin="0,4,0,0">
+                    <TextBlock x:Name="WidgetSizeLabel" DockPanel.Dock="Right" Foreground="{StaticResource BrushMuted}" Width="64" FontSize="12"/>
+                    <Slider x:Name="WidgetSizeSlider" Minimum="150" Maximum="600" Value="320"
+                            ValueChanged="WidgetIni_OnChanged"/>
+                  </DockPanel>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,8">
+                  <TextBlock Text="Seconds per photo" Foreground="{StaticResource BrushText}" FontSize="13"/>
+                  <DockPanel Margin="0,4,0,0">
+                    <TextBlock x:Name="WidgetSecondsLabel" DockPanel.Dock="Right" Foreground="{StaticResource BrushMuted}" Width="64" FontSize="12"/>
+                    <Slider x:Name="WidgetSecondsSlider" Minimum="15" Maximum="300" Value="60"
+                            ValueChanged="WidgetIni_OnChanged"/>
+                  </DockPanel>
+                </StackPanel>
+                <StackPanel Margin="0,0,0,16">
+                  <TextBlock Text="Corner radius" Foreground="{StaticResource BrushText}" FontSize="13"/>
+                  <DockPanel Margin="0,4,0,0">
+                    <TextBlock x:Name="WidgetRadiusLabel" DockPanel.Dock="Right" Foreground="{StaticResource BrushMuted}" Width="64" FontSize="12"/>
+                    <Slider x:Name="WidgetRadiusSlider" Minimum="0" Maximum="80" Value="28"
+                            ValueChanged="WidgetIni_OnChanged"/>
+                  </DockPanel>
+                </StackPanel>
+                <TextBlock Text="On/off" Style="{StaticResource Heading2}" Margin="0,0,0,4"/>
+                <CheckBox x:Name="PhotoWidgetOnCheck" Content="Photo widget" Foreground="{StaticResource BrushText}" Margin="0,0,0,4"
+                          Checked="PhotoWidgetOnCheck_Changed" Unchecked="PhotoWidgetOnCheck_Changed"/>
+                <StackPanel x:Name="LitboltChecksPanel" Margin="0,0,0,8"/>
+                <Expander Header="Extra Rainmeter skins (illustro)" Foreground="{StaticResource BrushText}" IsExpanded="False" Margin="0,0,0,0">
+                  <WrapPanel x:Name="IllustroChecksPanel" Margin="0,8,0,0"/>
+                </Expander>
+              </StackPanel>
+            </Border>
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <StackPanel>
+                <TextBlock Text="Who's featured" Style="{StaticResource Heading2}" Margin="0,0,0,8"/>
+                <DockPanel Margin="0,0,0,8">
+                  <CheckBox x:Name="WidgetFeaturedOnlyCheck" DockPanel.Dock="Right" Content="Featured only" Foreground="{StaticResource BrushText}"
+                            VerticalAlignment="Center" Margin="8,0,0,0" Checked="WidgetPeopleFilter_OnChanged" Unchecked="WidgetPeopleFilter_OnChanged"
+                            ToolTip="Show only people currently marked featured."/>
+                  <TextBox x:Name="WidgetPeopleSearch" Style="{StaticResource FieldBox}" Margin="0"
+                           TextChanged="WidgetPeopleFilter_OnChanged"
+                           ToolTip="Filter people and pairs by name."/>
+                </DockPanel>
+                <WrapPanel x:Name="WidgetPeopleChecks"/>
+                <TextBlock Text="Photos of me with…" Style="{StaticResource Heading2}" Margin="0,8,0,8"/>
+                <WrapPanel x:Name="WidgetPairChecks"/>
+                <TextBlock Text="Pinned photos" Style="{StaticResource Heading2}" Margin="0,16,0,8"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                  <Button Content="+ Pin photo" Style="{StaticResource SecondaryButton}" Click="AddWidgetPhoto_OnClick" Margin="0,0,8,0"/>
+                </StackPanel>
+                <WrapPanel x:Name="PinnedPhotosPanel"/>
+                <TextBlock Text="Hidden photos" Style="{StaticResource Heading2}" Margin="0,16,0,8"/>
+                <WrapPanel x:Name="HiddenPhotosPanel"/>
+              </StackPanel>
+            </ScrollViewer>
+          </Grid>
+          <Border Grid.Row="1" Background="{StaticResource BrushCard}" BorderBrush="{StaticResource BrushBorder}" BorderThickness="0,1,0,0" Padding="16,12">
+            <DockPanel>
+              <Button x:Name="WidgetApplyButton" DockPanel.Dock="Right" Content="Apply changes to widget"
+                      Style="{StaticResource WidgetApplyPulseButton}" Click="ApplyWidgetChanges_OnClick" IsEnabled="False"
+                      ToolTip="Save featured list, write Photo Widget.ini, and run Update-FeaturedPhotos.ps1."/>
+              <TextBlock x:Name="WidgetPendingStatus" VerticalAlignment="Center" Foreground="{StaticResource BrushMuted}" FontSize="13"
+                         Text="No pending changes"/>
+            </DockPanel>
           </Border>
         </Grid>
       </Grid>

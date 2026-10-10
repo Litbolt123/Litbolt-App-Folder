@@ -231,4 +231,23 @@
     <Setter Property="Margin" Value="0,8,0,0"/>
   </Style>
 
+  <Style x:Key="WidgetApplyPulseButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+    <Setter Property="Margin" Value="0"/>
+    <Style.Triggers>
+      <Trigger Property="IsEnabled" Value="True">
+        <Trigger.EnterActions>
+          <BeginStoryboard x:Name="WidgetApplyPulseStoryboard">
+            <Storyboard RepeatBehavior="Forever">
+              <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)"
+                              From="#E8A04A" To="#F5C878" Duration="0:0:1.2" AutoReverse="True"/>
+            </Storyboard>
+          </BeginStoryboard>
+        </Trigger.EnterActions>
+        <Trigger.ExitActions>
+          <StopStoryboard BeginStoryboardName="WidgetApplyPulseStoryboard"/>
+        </Trigger.ExitActions>
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
 </ResourceDictionary>

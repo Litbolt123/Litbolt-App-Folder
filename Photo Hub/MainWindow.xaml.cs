@@ -60,6 +60,7 @@ public partial class MainWindow : Window, ITrayHost
             if (capIdx >= 0 && capIdx + 1 < args.Length)
             {
                 var outDir = args[capIdx + 1];
+                var onlyTab = capIdx + 2 < args.Length ? args[capIdx + 2] : null;
                 var capTimer = new System.Windows.Threading.DispatcherTimer
                 {
                     Interval = TimeSpan.FromMilliseconds(1200),
@@ -67,7 +68,7 @@ public partial class MainWindow : Window, ITrayHost
                 capTimer.Tick += (_, _) =>
                 {
                     capTimer.Stop();
-                    CaptureUiScreenshots(outDir);
+                    CaptureUiScreenshots(outDir, onlyTab);
                     Application.Current.Shutdown();
                 };
                 capTimer.Start();
@@ -345,51 +346,39 @@ public partial class MainWindow : Window, ITrayHost
 
     private void BuildWidgetChecks()
     {
-        var people = FaceGroupsService.ListPeople();
+        _widgetAllPeople = FaceGroupsService.ListPeople().ToList();
         var enabled = _featured.EnabledPeople();
         var pairsOn = _featured.EnabledPairs();
 
-        WidgetPeopleChecks.Children.Clear();
         _peopleChecks.Clear();
-        foreach (var person in people)
+        foreach (var person in _widgetAllPeople)
         {
-            var chip = UiControls.CreatePersonChip(person.Name, person.ThumbnailPath, enabled.Contains(person.Name), out var toggle);
+            var toggle = new ToggleButton
+            {
+                IsChecked = enabled.Contains(person.Name),
+                Visibility = Visibility.Collapsed,
+            };
             _peopleChecks[person.Name] = toggle;
-            WidgetPeopleChecks.Children.Add(chip);
+            WireWidgetToggle(toggle);
         }
 
-        WidgetPairChecks.Children.Clear();
         _pairChecks.Clear();
-        var byName = people.ToDictionary(p => p.Name, StringComparer.Ordinal);
-        foreach (var other in people.Where(p => !string.Equals(p.Name, PhotoPaths.AugustPerson, StringComparison.Ordinal)))
+        foreach (var other in _widgetAllPeople.Where(p =>
+                     !string.Equals(p.Name, PhotoPaths.AugustPerson, StringComparison.Ordinal)))
         {
             var key = $"{PhotoPaths.AugustPerson} + {other.Name}";
-            byName.TryGetValue(PhotoPaths.AugustPerson, out var aug);
-            var chip = UiControls.CreatePersonChip(key, other.ThumbnailPath ?? aug?.ThumbnailPath, pairsOn.Contains(key), out var toggle);
+            var toggle = new ToggleButton
+            {
+                IsChecked = pairsOn.Contains(key),
+                Visibility = Visibility.Collapsed,
+            };
             _pairChecks[key] = toggle;
-            WidgetPairChecks.Children.Add(chip);
+            WireWidgetToggle(toggle);
         }
-    }
 
-    private void SaveFeatured_OnClick(object sender, RoutedEventArgs e)
-    {
-        var model = _featured.ReadModel();
-        model.People.Clear();
-        foreach (var (name, cb) in _peopleChecks.OrderBy(x => x.Key, StringComparer.Ordinal))
-        {
-            if (cb.IsChecked == true)
-                model.People.Add(name);
-        }
-        model.Pairs.Clear();
-        foreach (var (key, cb) in _pairChecks)
-        {
-            if (cb.IsChecked == true)
-                model.Pairs.Add($"pair: {key}");
-        }
-        _featured.WriteModel(model);
-        AppendLog("Saved featured-people.txt");
-        ShowToast("Featured list saved");
-        RefreshExcludeList();
+        RebuildWidgetPeopleChips();
+        RebuildWidgetPairChips();
+        CaptureWidgetBaseline();
     }
 
     private void AddWidgetPhoto_OnClick(object sender, RoutedEventArgs e)
@@ -404,7 +393,7 @@ public partial class MainWindow : Window, ITrayHost
         _featured.AddPhotoLine(dlg.FileName);
         AppendLog($"Added photo line: {dlg.FileName}");
         ShowToast("Pinned photo added");
-        RefreshExcludeList();
+        RefreshPhotoStrips();
     }
 
     private void BrowseIPhoneBackup_OnClick(object sender, RoutedEventArgs e)
@@ -414,31 +403,6 @@ public partial class MainWindow : Window, ITrayHost
             IPhoneBackupBox.Text = dlg.FolderName;
     }
 
-    private async void UpdateWidget_OnClick(object sender, RoutedEventArgs e)
-    {
-        if (!File.Exists(PhotoPaths.UpdateFeaturedScript))
-        {
-            AppendLog("Update-FeaturedPhotos.ps1 not found.", true);
-            return;
-        }
-
-        AppendLog("Running Update-FeaturedPhotos.ps1…");
-        try
-        {
-            var code = await _runner.RunPowerShellAsync(PhotoPaths.UpdateFeaturedScript, CancellationToken.None);
-            if (code == 0)
-            {
-                AppendLog("Widget update finished.");
-                ShowToast("Widget update finished");
-            }
-            else
-                AppendLog($"Widget script exit code {code}.", true);
-        }
-        catch (Exception ex)
-        {
-            AppendLog(ex.Message, true);
-        }
-    }
 
     private void ClearLog_OnClick(object sender, RoutedEventArgs e) => LogBox.Clear();
 

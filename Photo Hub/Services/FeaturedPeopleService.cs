@@ -128,4 +128,11 @@ public sealed class FeaturedPeopleService
             model.PinnedPhotos.Add(fullPath);
         WriteModel(model);
     }
+
+    public void RemovePinnedPhoto(string fullPath)
+    {
+        var model = ReadModel();
+        model.PinnedPhotos.RemoveAll(p => string.Equals(p, fullPath, StringComparison.OrdinalIgnoreCase));
+        WriteModel(model);
+    }
 }

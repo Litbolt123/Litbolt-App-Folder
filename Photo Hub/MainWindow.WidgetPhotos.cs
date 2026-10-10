@@ -11,19 +11,11 @@ public partial class MainWindow
     private bool _suppressWidgetIniWrite;
     private readonly Dictionary<string, CheckBox> _illustroChecks = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, CheckBox> _litboltChecks = new(StringComparer.OrdinalIgnoreCase);
-    private DispatcherTimer? _widgetIniDebounce;
-    private bool _widgetIniWritePending;
 
     private void InitWidgetAndPhotos()
     {
         HubLog.Line += (msg, err) => Dispatcher.Invoke(() => AppendLog(msg, err));
         RainmeterService.EnsureCurrentPhotoSkinHook();
-        _widgetIniDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-        _widgetIniDebounce.Tick += (_, _) =>
-        {
-            _widgetIniDebounce!.Stop();
-            CommitWidgetIniWrite();
-        };
         _suppressWidgetIniWrite = true;
         var s = RainmeterService.ReadWidgetSettings();
         WidgetSizeSlider.Value = s.Size;
@@ -38,7 +30,8 @@ public partial class MainWindow
         RefreshWidgetPreview();
         BuildLitboltChecks();
         BuildIllustroChecks();
-        RefreshExcludeList();
+        RefreshPhotoStrips();
+        CaptureWidgetBaseline();
     }
 
     private void RefreshCurrentWidgetPhoto()
@@ -57,7 +50,7 @@ public partial class MainWindow
         WidgetPreviewImage.Source = UiControls.LoadThumb(path, 480);
         var size = (int)Math.Clamp(WidgetSizeSlider.Value, 150, 600);
         var radius = (int)WidgetRadiusSlider.Value;
-        var preview = Math.Min(240, size * 0.4);
+        var preview = Math.Min(220, Math.Max(120, size * 0.55));
         WidgetPreviewClip.Width = preview;
         WidgetPreviewClip.Height = preview;
         var corner = Math.Min(radius * 0.4, preview / 2);
@@ -71,6 +64,13 @@ public partial class MainWindow
         LitboltChecksPanel.Children.Clear();
         _litboltChecks.Clear();
         var prefs = RainmeterPreferencesStore.Load();
+        LitboltChecksPanel.Children.Add(new TextBlock
+        {
+            Text = "Litbolt widgets",
+            Foreground = (System.Windows.Media.Brush)FindResource("BrushText"),
+            FontSize = 13,
+            Margin = new Thickness(0, 0, 0, 4),
+        });
         foreach (var skin in RainmeterService.ListLitboltSkins())
         {
             var on = prefs.LitboltSkins.GetValueOrDefault(skin.ConfigKey, false);
@@ -79,7 +79,7 @@ public partial class MainWindow
                 Content = skin.DisplayName,
                 IsChecked = on,
                 Foreground = System.Windows.Media.Brushes.White,
-                Margin = new Thickness(0, 4, 16, 4),
+                Margin = new Thickness(0, 2, 0, 2),
                 ToolTip = $"Load or unload Rainmeter skin: {skin.IniPath}",
             };
             cb.Checked += (_, _) => SetLitbolt(skin.ConfigKey, true);
@@ -129,15 +129,6 @@ public partial class MainWindow
         RainmeterPreferencesStore.Save(prefs);
     }
 
-    private void RefreshExcludeList()
-    {
-        ExcludeList.Items.Clear();
-        foreach (var ex in _featured.ReadModel().Excludes.OrderBy(x => x, StringComparer.OrdinalIgnoreCase))
-            ExcludeList.Items.Add(ex);
-        PinnedList.Items.Clear();
-        foreach (var p in _featured.ReadModel().PinnedPhotos)
-            PinnedList.Items.Add(p);
-    }
 
     private void PhotoWidgetOnCheck_Changed(object sender, RoutedEventArgs e)
     {
@@ -160,25 +151,13 @@ public partial class MainWindow
         WidgetSecondsLabel.Text = $"{(int)WidgetSecondsSlider.Value} s";
         WidgetRadiusLabel.Text = $"{(int)WidgetRadiusSlider.Value} px";
         RefreshWidgetPreview();
-        _widgetIniWritePending = true;
-        _widgetIniDebounce?.Stop();
-        _widgetIniDebounce?.Start();
-    }
-
-    private void WidgetIni_OnCommit(object sender, RoutedEventArgs e)
-    {
-        if (!IsLoaded || _suppressWidgetIniWrite)
-            return;
-        _widgetIniDebounce?.Stop();
-        if (_widgetIniWritePending)
-            CommitWidgetIniWrite();
+        UpdateWidgetPendingUi();
     }
 
     private void CommitWidgetIniWrite()
     {
         if (!IsLoaded || _suppressWidgetIniWrite)
             return;
-        _widgetIniWritePending = false;
         var settings = new RainmeterWidgetSettings(
             (int)Math.Clamp(WidgetSizeSlider.Value, 150, 600),
             (int)WidgetSecondsSlider.Value,
@@ -224,24 +203,10 @@ public partial class MainWindow
 
         AppendLog($"Excluded from widget: {fileName}");
         ShowToast($"Excluded {fileName}");
-        RefreshExcludeList();
+        RefreshPhotoStrips();
         await RunUpdateFeaturedScriptAsync();
         RainmeterService.RefreshPhotoWidget();
         RefreshCurrentWidgetPhoto();
-    }
-
-    private async void RemoveExclude_OnClick(object sender, RoutedEventArgs e)
-    {
-        if (ExcludeList.SelectedItem is not string item)
-        {
-            MessageBox.Show("Select an excluded file name in the list first.", "Photo Hub", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-        _featured.RemoveExcludeFileName(item);
-        RefreshExcludeList();
-        AppendLog($"Removed exclude: {item}");
-        ShowToast($"Removed exclude {item}");
-        await RunUpdateFeaturedScriptAsync();
     }
 
     private async Task RunUpdateFeaturedScriptAsync()
