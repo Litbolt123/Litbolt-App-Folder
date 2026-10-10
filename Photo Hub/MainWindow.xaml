@@ -291,6 +291,7 @@
               <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Border Grid.Column="0" Style="{StaticResource Card}" Padding="16" VerticalAlignment="Stretch">
+              <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
               <StackPanel>
                 <TextBlock Text="Widget" Style="{StaticResource Heading1}" Margin="0,0,0,4"/>
                 <TextBlock Text="Live preview" FontWeight="SemiBold" Foreground="{StaticResource BrushText}" Margin="0,0,0,8"/>
@@ -342,6 +343,7 @@
                   <WrapPanel x:Name="IllustroChecksPanel" Margin="0,8,0,0"/>
                 </Expander>
               </StackPanel>
+              </ScrollViewer>
             </Border>
             <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
               <StackPanel>
