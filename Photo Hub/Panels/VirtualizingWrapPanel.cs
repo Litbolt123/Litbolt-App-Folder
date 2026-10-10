@@ -161,7 +161,11 @@ public class VirtualizingWrapPanel : VirtualizingPanel, IScrollInfo
             var index = containers.IndexFromContainer(child);
             if (index < minIndex || index > maxIndex)
             {
-                generator.Remove(new GeneratorPosition(index, 0), 1);
+                if (index >= 0)
+                {
+                    var pos = generator.GeneratorPositionFromIndex(index);
+                    generator.Remove(pos, 1);
+                }
                 RemoveInternalChildRange(i, 1);
             }
         }
@@ -178,7 +182,10 @@ public class VirtualizingWrapPanel : VirtualizingPanel, IScrollInfo
             var child = InternalChildren[i];
             var index = containers.IndexFromContainer(child);
             if (index >= 0)
-                generator.Remove(new GeneratorPosition(index, 0), 1);
+            {
+                var pos = generator.GeneratorPositionFromIndex(index);
+                generator.Remove(pos, 1);
+            }
             RemoveInternalChildRange(i, 1);
         }
     }

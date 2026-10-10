@@ -4,6 +4,20 @@
                     xmlns:services="clr-namespace:PhotoHub.Services"
                     xmlns:panels="clr-namespace:PhotoHub.Panels">
 
+  <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI Variable, Segoe UI</FontFamily>
+  <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
+  <SolidColorBrush x:Key="BrushBg" Color="#12141A"/>
+  <SolidColorBrush x:Key="BrushPanel" Color="#161A22"/>
+  <SolidColorBrush x:Key="BrushCard" Color="#1A1E28"/>
+  <SolidColorBrush x:Key="BrushInput" Color="#1A1E28"/>
+  <SolidColorBrush x:Key="BrushBorder" Color="#2A3040"/>
+  <SolidColorBrush x:Key="BrushGold" Color="#E8A04A"/>
+  <SolidColorBrush x:Key="BrushGoldDim" Color="#3D3428"/>
+  <SolidColorBrush x:Key="BrushMuted" Color="#8890A0"/>
+  <SolidColorBrush x:Key="BrushText" Color="#F0F2F6"/>
+  <SolidColorBrush x:Key="BrushHelper" Color="#B0B8C8"/>
+
   <DataTemplate x:Key="PersonFolderCardTemplate" DataType="{x:Type services:PersonFolder}">
     <StackPanel HorizontalAlignment="Center" Width="124">
       <controls:PersonFaceImage SourcePath="{Binding ThumbnailPath}"/>
@@ -55,13 +69,13 @@
           <Setter Property="Template">
             <Setter.Value>
               <ControlTemplate TargetType="ListBoxItem">
-                <Border x:Name="Bd" CornerRadius="12" Background="{StaticResource BrushPanel}"
-                        BorderBrush="{StaticResource BrushBorder}" BorderThickness="1" SnapsToDevicePixels="True">
+                <Border x:Name="Bd" CornerRadius="12" Background="{DynamicResource BrushCard}"
+                        BorderBrush="{DynamicResource BrushBorder}" BorderThickness="1" SnapsToDevicePixels="True">
                   <ContentPresenter/>
                 </Border>
                 <ControlTemplate.Triggers>
                   <Trigger Property="IsSelected" Value="True">
-                    <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource BrushGold}"/>
+                    <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource BrushGold}"/>
                   </Trigger>
                 </ControlTemplate.Triggers>
               </ControlTemplate>
@@ -71,20 +85,6 @@
       </Setter.Value>
     </Setter>
   </Style>
-
-  <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI Variable, Segoe UI</FontFamily>
-  <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
-
-  <SolidColorBrush x:Key="BrushBg" Color="#12141A"/>
-  <SolidColorBrush x:Key="BrushPanel" Color="#161A22"/>
-  <SolidColorBrush x:Key="BrushCard" Color="#1A1E28"/>
-  <SolidColorBrush x:Key="BrushInput" Color="#1A1E28"/>
-  <SolidColorBrush x:Key="BrushBorder" Color="#2A3040"/>
-  <SolidColorBrush x:Key="BrushGold" Color="#E8A04A"/>
-  <SolidColorBrush x:Key="BrushGoldDim" Color="#3D3428"/>
-  <SolidColorBrush x:Key="BrushMuted" Color="#8890A0"/>
-  <SolidColorBrush x:Key="BrushText" Color="#F0F2F6"/>
-  <SolidColorBrush x:Key="BrushHelper" Color="#B0B8C8"/>
 
   <Style x:Key="Heading1" TargetType="TextBlock">
     <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
@@ -229,6 +229,13 @@
   <Style x:Key="InlineProgress" TargetType="ProgressBar" BasedOn="{StaticResource GoldProgress}">
     <Setter Property="Height" Value="6"/>
     <Setter Property="Margin" Value="0,8,0,0"/>
+  </Style>
+
+  <Style x:Key="TabStickyBar" TargetType="Border">
+    <Setter Property="Background" Value="{StaticResource BrushCard}"/>
+    <Setter Property="BorderBrush" Value="{StaticResource BrushBorder}"/>
+    <Setter Property="BorderThickness" Value="0,1,0,0"/>
+    <Setter Property="Padding" Value="16,12"/>
   </Style>
 
   <Style x:Key="WidgetApplyPulseButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">

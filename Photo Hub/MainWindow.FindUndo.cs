@@ -1,5 +1,8 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using PhotoHub.Services;
 
 namespace PhotoHub;
@@ -49,8 +52,42 @@ public partial class MainWindow
         });
     }
 
-    private void RefreshUndoList_OnClick(object sender, RoutedEventArgs e) =>
-        UndoList.ItemsSource = FoldLogParser.ParseRecent(150);
+    private List<FoldLogEntry> _undoEntries = [];
+    private ICollectionView? _undoView;
+
+    private void RefreshUndoList_OnClick(object sender, RoutedEventArgs e)
+    {
+        _undoEntries = FoldLogParser.ParseRecent(150).ToList();
+        _undoView = CollectionViewSource.GetDefaultView(_undoEntries);
+        _undoView.Filter = UndoFilter;
+        UndoList.ItemsSource = _undoView;
+        UpdateUndoSelectionStatus();
+    }
+
+    private bool UndoFilter(object item)
+    {
+        if (item is not FoldLogEntry entry)
+            return false;
+        var q = UndoSearchBox.Text?.Trim() ?? "";
+        if (q.Length == 0)
+            return true;
+        return entry.Kind.ToString().Contains(q, StringComparison.OrdinalIgnoreCase)
+               || entry.Source.Contains(q, StringComparison.OrdinalIgnoreCase)
+               || entry.Destination.Contains(q, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void UndoSearch_OnChanged(object sender, TextChangedEventArgs e) => _undoView?.Refresh();
+
+    private void UndoList_OnSelectionChanged(object sender, SelectionChangedEventArgs e) => UpdateUndoSelectionStatus();
+
+    private void UpdateUndoSelectionStatus()
+    {
+        if (!IsLoaded)
+            return;
+        UndoSelectionStatus.Text = UndoList.SelectedItem is FoldLogEntry entry
+            ? $"{entry.Kind}: {Path.GetFileName(entry.Destination)}"
+            : "Select a fold-log entry";
+    }
 
     private void UndoSelected_OnClick(object sender, RoutedEventArgs e)
     {

@@ -31,6 +31,22 @@ Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 - **Verify:** `powershell -File today-feed.ps1` exits 0 from `Skins\Litbolt\feeders`.
 - **Do not regress:** Feeder scripts under `rainmeter-skins/Litbolt/feeders`.
 
+## WPF theme StaticResource order in merged dictionary
+
+- **Symptom:** People grid / capture crashes: `Cannot find resource named 'BrushCard'` or `BrushText` in `ListBoxItem` template.
+- **Failed:** `StaticResource` brushes defined *after* `PeopleGridListBox` style in `PhotoHubTheme.xaml`.
+- **Worked:** Define `SolidColorBrush` / fonts at top of theme dictionary before styles and templates; use `DynamicResource` in item templates if order cannot change.
+- **Verify:** `--capture-ui … people` at 1366×768 without `XamlParseException`.
+- **Do not regress:** `PhotoHubTheme.xaml` resource order.
+
+## VirtualizingWrapPanel — GeneratorPosition on remove
+
+- **Symptom:** `Remove(-1,1) cannot include items without a corresponding user interface element` when People list measures with filtered `ICollectionView`.
+- **Failed:** `generator.Remove(new GeneratorPosition(index, 0), 1)` when `IndexFromContainer` returns -1.
+- **Worked:** `GeneratorPositionFromIndex(index)` only when `index >= 0`; drop orphan internal children without generator remove.
+- **Verify:** Open People tab, type in search filter, scroll grid.
+- **Do not regress:** `Panels/VirtualizingWrapPanel.cs` `RemoveInvisible`.
+
 ## Photo Hub Widget tab — long single column scroll
 
 - **Symptom:** Featured people list pushes preview/sliders/update to bottom; hard to use on laptop screens.

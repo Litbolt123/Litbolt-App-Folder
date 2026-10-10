@@ -156,6 +156,11 @@
 - **Config:** HWiNFO Gadget registry indices in `Helios Health\@Resources\sensors.inc` (not shared-memory plugin); Google iCal URL in `Today\@Resources\calendar-config.json`; CurseForge in `stats-config.json`; Etsy placeholder until API wired.
 - **Verify:** Rainmeter Manage shows Litbolt skins (unchecked); feeders write `data.inc`; Photo Hub Widget tab lists four Litbolt checkboxes; `register-tasks.ps1` elevated for schedules.
 
+## 2026-10-10 — Photo Hub all tabs: sticky bars + scroll regions
+
+- **Ask:** Apply Widget-tab pattern to Sort, People, Photos, iPhone, Find, Undo, Log — sticky primary actions, scrollable lists with search/filter, 1366×768; screenshots each tab.
+- **Done:** Removed `TabScrollHost`; per-tab `TabStickyBar` + `*` content; People/Undo search filters; theme brush order fix; `VirtualizingWrapPanel` generator remove fix; `docs/ui-screenshots/tab-*.png` refreshed.
+
 ## 2026-10-10 — Photo Hub Widget tab layout (two columns + apply bar)
 
 - **Ask:** Redesign Widget tab — fixed left rail (preview, actions, look, on/off), scrollable right (featured chips, pairs, pinned/hidden strips), sticky apply bar with pending count; 1366×768; screenshot + Release + commit.

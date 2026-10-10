@@ -58,9 +58,6 @@ public partial class MainWindow
         NavLog.IsChecked = page == PhotoHubPage.Log;
         _suppressNav = false;
 
-        TabScrollHost.Visibility = page is PhotoHubPage.People or PhotoHubPage.Widget
-            ? Visibility.Collapsed
-            : Visibility.Visible;
         PageSort.Visibility = page == PhotoHubPage.Sort ? Visibility.Visible : Visibility.Collapsed;
         PagePeople.Visibility = page == PhotoHubPage.People ? Visibility.Visible : Visibility.Collapsed;
         PageWidget.Visibility = page == PhotoHubPage.Widget ? Visibility.Visible : Visibility.Collapsed;

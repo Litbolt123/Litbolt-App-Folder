@@ -63,7 +63,7 @@ public partial class MainWindow : Window, ITrayHost
                 var onlyTab = capIdx + 2 < args.Length ? args[capIdx + 2] : null;
                 var capTimer = new System.Windows.Threading.DispatcherTimer
                 {
-                    Interval = TimeSpan.FromMilliseconds(1200),
+                    Interval = TimeSpan.FromMilliseconds(2500),
                 };
                 capTimer.Tick += (_, _) =>
                 {
@@ -89,6 +89,8 @@ public partial class MainWindow : Window, ITrayHost
         var prefix = isError ? "Error: " : "";
         LogBox.AppendText($"{DateTime.Now:HH:mm:ss} {prefix}{message}\n");
         LogBox.ScrollToEnd();
+        if (IsLoaded)
+            LogLineStatus.Text = LogBox.LineCount <= 1 ? "Session log" : $"{LogBox.LineCount} lines";
     }
 
     private void OnRunnerLine(string line)
@@ -231,20 +233,22 @@ public partial class MainWindow : Window, ITrayHost
 
     private void RefreshPeople()
     {
-        var people = FaceGroupsService.ListPeople();
+        _allPeople = FaceGroupsService.ListPeople().ToList();
         var selectedPath = _selectedPerson?.Path;
-        PeopleGrid.ItemsSource = people;
+        BindPeopleGrid();
         if (!string.IsNullOrEmpty(selectedPath))
         {
-            var match = people.FirstOrDefault(p => p.Path == selectedPath);
+            var match = _allPeople.FirstOrDefault(p => p.Path == selectedPath);
             PeopleGrid.SelectedItem = match;
             _selectedPerson = match;
         }
+        UpdatePeopleSelectionStatus();
     }
 
     private void PeopleGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         _selectedPerson = PeopleGrid.SelectedItem as PersonFolder;
+        UpdatePeopleSelectionStatus();
     }
 
     private void RenamePerson_OnClick(object sender, RoutedEventArgs e)
@@ -404,7 +408,11 @@ public partial class MainWindow : Window, ITrayHost
     }
 
 
-    private void ClearLog_OnClick(object sender, RoutedEventArgs e) => LogBox.Clear();
+    private void ClearLog_OnClick(object sender, RoutedEventArgs e)
+    {
+        LogBox.Clear();
+        LogLineStatus.Text = "Session log";
+    }
 
     protected override void OnClosed(EventArgs e)
     {

@@ -21,7 +21,7 @@ public partial class MainWindow
             (PhotoHubPage.Undo, "undo"),
             (PhotoHubPage.Log, "log"),
         };
-        if (!string.IsNullOrEmpty(onlyTab))
+        if (!string.IsNullOrEmpty(onlyTab) && !onlyTab.Equals("all", StringComparison.OrdinalIgnoreCase))
             pages = pages.Where(p => p.Item2.Equals(onlyTab, StringComparison.OrdinalIgnoreCase)).ToArray();
         Width = 1366;
         Height = 768;
@@ -30,7 +30,7 @@ public partial class MainWindow
             ShowPage(page);
             UpdateLayout();
             Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
-            Thread.Sleep(500);
+            Thread.Sleep(800);
             SavePng(this, Path.Combine(outputDir, $"tab-{name}.png"));
         }
     }
