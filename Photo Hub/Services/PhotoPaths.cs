@@ -15,7 +15,7 @@ public static class PhotoPaths
     public const string UpdateFeaturedScript = WidgetRoot + @"\Update-FeaturedPhotos.ps1";
     public const string StraightenFeaturedScript = @"scripts\Straighten-FeaturedJpg.ps1";
     public const string RainmeterIni = @"C:\Users\Augus\Rainmeter\Skins\Photo Widget\Photo Widget.ini";
-    public const string RainmeterCurrentPhotoIni = @"C:\Users\Augus\Rainmeter\Skins\Photo Widget\@Resources\current-photo.txt";
+    public const string RainmeterCurrentPhotoInc = @"C:\Users\Augus\Rainmeter\Skins\Photo Widget\@Resources\current-photo.inc";
     public const string RainmeterExe = @"C:\Program Files\Rainmeter\Rainmeter.exe";
     public const string RainmeterSkinsRoot = @"C:\Users\Augus\Rainmeter\Skins";
     public const string IllustroRoot = RainmeterSkinsRoot + @"\illustro";

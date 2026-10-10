@@ -108,6 +108,19 @@ public sealed class FeaturedPeopleService
         WriteModel(model);
     }
 
+    /// <summary>Removes one exclude line; preserves all other lines and comments verbatim.</summary>
+    public void RemoveExcludeFileName(string fileName)
+    {
+        var name = Path.GetFileName(fileName).Trim();
+        if (name.Length == 0)
+            return;
+        var target = $"exclude: {name}";
+        var kept = ReadLines()
+            .Where(line => !string.Equals(line.Trim(), target, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        WriteLines(kept);
+    }
+
     public void AddPhotoLine(string fullPath)
     {
         var model = ReadModel();

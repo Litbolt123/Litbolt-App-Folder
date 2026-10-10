@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Microsoft.Win32;
 using PhotoHub.Services;
 
@@ -9,11 +10,19 @@ public partial class MainWindow
 {
     private bool _suppressWidgetIniWrite;
     private readonly Dictionary<string, CheckBox> _illustroChecks = new(StringComparer.OrdinalIgnoreCase);
+    private DispatcherTimer? _widgetIniDebounce;
+    private bool _widgetIniWritePending;
 
     private void InitWidgetAndPhotos()
     {
         HubLog.Line += (msg, err) => Dispatcher.Invoke(() => AppendLog(msg, err));
         RainmeterService.EnsureCurrentPhotoSkinHook();
+        _widgetIniDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
+        _widgetIniDebounce.Tick += (_, _) =>
+        {
+            _widgetIniDebounce!.Stop();
+            CommitWidgetIniWrite();
+        };
         _suppressWidgetIniWrite = true;
         var s = RainmeterService.ReadWidgetSettings();
         WidgetSizeSlider.Value = s.Size;
@@ -31,10 +40,11 @@ public partial class MainWindow
 
     private void RefreshCurrentWidgetPhoto()
     {
-        var name = RainmeterService.ReadCurrentWidgetPhotoFileName();
+        var path = RainmeterService.ReadCurrentWidgetPhotoPath();
+        var name = string.IsNullOrEmpty(path) ? null : Path.GetFileName(path);
         CurrentWidgetPhotoText.Text = string.IsNullOrEmpty(name)
             ? "(Widget not showing a file yet — click the widget to advance.)"
-            : name;
+            : $"{name}\n{path}";
     }
 
     private void BuildIllustroChecks()
@@ -93,8 +103,31 @@ public partial class MainWindow
     {
         if (!IsLoaded || _suppressWidgetIniWrite)
             return;
+        var size = (int)Math.Clamp(WidgetSizeSlider.Value, 150, 600);
+        WidgetSizeLabel.Text = $"{size} px";
+        WidgetSecondsLabel.Text = $"{(int)WidgetSecondsSlider.Value} s";
+        WidgetRadiusLabel.Text = $"{(int)WidgetRadiusSlider.Value} px";
+        _widgetIniWritePending = true;
+        _widgetIniDebounce?.Stop();
+        _widgetIniDebounce?.Start();
+    }
+
+    private void WidgetIni_OnCommit(object sender, RoutedEventArgs e)
+    {
+        if (!IsLoaded || _suppressWidgetIniWrite)
+            return;
+        _widgetIniDebounce?.Stop();
+        if (_widgetIniWritePending)
+            CommitWidgetIniWrite();
+    }
+
+    private void CommitWidgetIniWrite()
+    {
+        if (!IsLoaded || _suppressWidgetIniWrite)
+            return;
+        _widgetIniWritePending = false;
         var settings = new RainmeterWidgetSettings(
-            (int)WidgetSizeSlider.Value,
+            (int)Math.Clamp(WidgetSizeSlider.Value, 150, 600),
             (int)WidgetSecondsSlider.Value,
             (int)WidgetRadiusSlider.Value);
         WidgetSizeLabel.Text = $"{settings.Size} px";
@@ -103,7 +136,7 @@ public partial class MainWindow
         try
         {
             RainmeterService.WriteWidgetSettings(settings);
-            AppendLog($"Widget ini: Size={settings.Size}, Seconds={settings.Seconds}, Radius={settings.Radius}");
+            AppendLog($"Widget ini saved: Size={settings.Size}, Seconds={settings.Seconds}, Radius={settings.Radius}");
         }
         catch (Exception ex)
         {
@@ -111,28 +144,68 @@ public partial class MainWindow
         }
     }
 
-    private void HideCurrentWidgetPhoto_OnClick(object sender, RoutedEventArgs e)
+    private async void HideCurrentWidgetPhoto_OnClick(object sender, RoutedEventArgs e)
     {
         RefreshCurrentWidgetPhoto();
-        var name = RainmeterService.ReadCurrentWidgetPhotoFileName();
-        if (string.IsNullOrEmpty(name))
+        var fullPath = RainmeterService.ReadCurrentWidgetPhotoPath();
+        if (string.IsNullOrWhiteSpace(fullPath))
         {
-            MessageBox.Show("No current widget photo detected yet.", "Photo Hub", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                "No current photo path in @Resources\\current-photo.inc yet. Click the widget to change photos, then try again.",
+                "Photo Hub",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
             return;
         }
-        _featured.AddExcludeFileName(name);
+
+        var fileName = Path.GetFileName(fullPath);
+        _featured.AddExcludeFileName(fileName);
+
+        var featuredRoot = Path.GetFullPath(PhotoPaths.WidgetFeatured).TrimEnd('\\');
+        var normalized = Path.GetFullPath(fullPath).TrimEnd('\\');
+        if (normalized.StartsWith(featuredRoot, StringComparison.OrdinalIgnoreCase) && File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+            AppendLog($"Removed from Featured folder: {fileName}");
+        }
+
+        AppendLog($"Excluded from widget: {fileName}");
         RefreshExcludeList();
-        AppendLog($"Excluded from widget: {name}");
+        await RunUpdateFeaturedScriptAsync();
+        RainmeterService.RefreshPhotoWidget();
+        RefreshCurrentWidgetPhoto();
     }
 
-    private void RemoveExclude_OnClick(object sender, RoutedEventArgs e)
+    private async void RemoveExclude_OnClick(object sender, RoutedEventArgs e)
     {
         if (ExcludeList.SelectedItem is not string item)
+        {
+            MessageBox.Show("Select an excluded file name in the list first.", "Photo Hub", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
-        var model = _featured.ReadModel();
-        model.Excludes.RemoveAll(x => string.Equals(x, item, StringComparison.OrdinalIgnoreCase));
-        _featured.WriteModel(model);
+        }
+        _featured.RemoveExcludeFileName(item);
         RefreshExcludeList();
+        AppendLog($"Removed exclude: {item}");
+        await RunUpdateFeaturedScriptAsync();
+    }
+
+    private async Task RunUpdateFeaturedScriptAsync()
+    {
+        if (!File.Exists(PhotoPaths.UpdateFeaturedScript))
+        {
+            AppendLog("Update-FeaturedPhotos.ps1 not found.", true);
+            return;
+        }
+        AppendLog("Running Update-FeaturedPhotos.ps1…");
+        try
+        {
+            var code = await _runner.RunPowerShellAsync(PhotoPaths.UpdateFeaturedScript, CancellationToken.None);
+            AppendLog(code == 0 ? "Widget update finished." : $"Widget script exit code {code}.", code != 0);
+        }
+        catch (Exception ex)
+        {
+            AppendLog(ex.Message, true);
+        }
     }
 
     private async void RefreshWidgetFromBackup_OnClick(object sender, RoutedEventArgs e)

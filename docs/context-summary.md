@@ -3,6 +3,11 @@
 - **User:** Build Photo Hub WPF (.NET 8) for face sort / people / Rainmeter widget; place under `Photo Hub/`; match Litbolt App Folder styling, shortcuts, launcher pattern.
 - **Done:** New `Photo Hub/PhotoHub.csproj` (Litbolt.Shell tray/single-instance, dark UI like Local Video Hub, Release → `%LocalAppData%\Programs\PhotoHub\` + Start Menu shortcut via shared `scripts/update-windows-shortcuts.ps1`). Python orchestrator `Pictures\_sort-tools\photo_hub\sort_inbox.py` reuses `audit2.detect` + strict thresholds (0.80/48/0.62/0.08). Wired into solution + App Folder nav (`PhotoHubModule`, settings EXE override). README in `Photo Hub/README.md`.
 
+## 2026-10-10 — Photo Hub Rainmeter slider + exclude fixes
+
+- **User:** Sliders destroyed Photo Widget.ini; hide/remove exclude broken (read `current-photo.inc`, run Update-FeaturedPhotos on remove).
+- **Done:** Safe `[Variables]`-only ini writes with good-backup restore; debounced slider commit; hide reads `CurrentPhoto`, excludes, deletes Featured copy, runs update script; remove exclude line-preserving + script.
+
 ## 2026-10-10 — Photo Hub 0.2 (widget refresh, iPhone, undo)
 
 - **User:** Both widget refresh buttons (backup + People); full widget tab; iPhone tab; find + undo COPY with hash match; commit per step; no Desktop shortcut.

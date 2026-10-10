@@ -245,20 +245,26 @@
             <TextBlock Text="Widget.ini" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,8"/>
             <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
               <TextBlock Text="Size" Foreground="White" Width="64" VerticalAlignment="Center"/>
-              <Slider x:Name="WidgetSizeSlider" Width="220" Minimum="160" Maximum="480" Value="320"
-                      ValueChanged="WidgetIni_OnChanged"/>
+              <Slider x:Name="WidgetSizeSlider" Width="220" Minimum="150" Maximum="600" Value="320"
+                      ValueChanged="WidgetIni_OnChanged"
+                      PreviewMouseLeftButtonUp="WidgetIni_OnCommit"
+                      LostMouseCapture="WidgetIni_OnCommit"/>
               <TextBlock x:Name="WidgetSizeLabel" Foreground="#8890A0" Margin="12,0,0,0" VerticalAlignment="Center"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,4,0,4">
               <TextBlock Text="Seconds" Foreground="White" Width="64" VerticalAlignment="Center"/>
               <Slider x:Name="WidgetSecondsSlider" Width="220" Minimum="15" Maximum="300" Value="60"
-                      ValueChanged="WidgetIni_OnChanged"/>
+                      ValueChanged="WidgetIni_OnChanged"
+                      PreviewMouseLeftButtonUp="WidgetIni_OnCommit"
+                      LostMouseCapture="WidgetIni_OnCommit"/>
               <TextBlock x:Name="WidgetSecondsLabel" Foreground="#8890A0" Margin="12,0,0,0" VerticalAlignment="Center"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,4,0,12">
               <TextBlock Text="Radius" Foreground="White" Width="64" VerticalAlignment="Center"/>
               <Slider x:Name="WidgetRadiusSlider" Width="220" Minimum="0" Maximum="80" Value="28"
-                      ValueChanged="WidgetIni_OnChanged"/>
+                      ValueChanged="WidgetIni_OnChanged"
+                      PreviewMouseLeftButtonUp="WidgetIni_OnCommit"
+                      LostMouseCapture="WidgetIni_OnCommit"/>
               <TextBlock x:Name="WidgetRadiusLabel" Foreground="#8890A0" Margin="12,0,0,0" VerticalAlignment="Center"/>
             </StackPanel>
             <TextBlock Text="illustro skins" Foreground="White" FontWeight="SemiBold" Margin="0,0,0,8"/>

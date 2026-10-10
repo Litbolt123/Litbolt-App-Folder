@@ -7,6 +7,14 @@ Vault index: `C:\Users\Augus\OneDrive\Documents\Obsidian Vault\Atlas\Lessons.md`
 
 Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 
+## Rainmeter Photo Widget.ini — preserve full skin on slider write
+
+- **Symptom:** Moving Size/Seconds/Radius left only three variable lines; Rainmeter reported no meters and deactivated the skin.
+- **Failed:** Regex replace on whole file or `text.Replace("[Variables]", …)` that dropped sections; writing on every slider tick.
+- **Worked:** Parse `[Variables]` only; replace `Size`/`Seconds`/`Radius` lines; refuse write without `[MeterPhoto]`; restore `Photo Widget.ini.good-2026-10-10` first; debounce 500 ms / mouse release; clamp Size 150–600; one `!Refresh`.
+- **Verify:** Slider min/max (150–600) — ini still contains `[MeterPhoto]` and `[MeasurePhoto]`.
+- **Do not regress:** `RainmeterService.WriteWidgetSettings` / `EnsureIniHasMeters`.
+
 ## Fold-log COPY undo — destination hash must still match source
 
 - **Symptom:** Undoing a COPY removed a file the user had edited or replaced at the destination.
