@@ -1,4 +1,5 @@
 cover.jpg
+cover-*.jpg
 nowplaying.ini
 watch.pid
 watch.stop

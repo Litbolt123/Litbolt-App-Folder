@@ -1,6 +1,5 @@
 local iniPath = ''
-local lastCoverRev = nil
-local lastTitle = nil
+local lastCoverFile = nil
 
 local function trim(s)
   if not s then return '' end
@@ -54,7 +53,6 @@ function Update()
     iniPath = SKIN:GetVariable('NowPlayingIni')
   end
 
-  local mediaDir = SKIN:GetVariable('MediaDir')
   local d = readIni(iniPath)
 
   local title = d['Title'] or ''
@@ -63,7 +61,7 @@ function Update()
   local progress = d['Progress'] or '0'
   local posText = d['PositionText'] or '0:00'
   local durText = d['DurationText'] or '0:00'
-  local rev = d['CoverRev'] or '0'
+  local coverFile = d['CoverFile'] or 'cover.jpg'
 
   SKIN:Bang('!SetVariable', 'NpTitle', title)
   SKIN:Bang('!SetVariable', 'NpArtist', artist)
@@ -71,14 +69,9 @@ function Update()
   SKIN:Bang('!SetVariable', 'NpProgress', progress)
   SKIN:Bang('!SetVariable', 'NpTime', posText .. ' / ' .. durText)
 
-  local coverPath = mediaDir .. 'cover.jpg'
-  SKIN:Bang('!SetVariable', 'NpCoverFile', coverPath)
-  if rev ~= lastCoverRev or title ~= lastTitle then
-    lastCoverRev = rev
-    lastTitle = title
-    SKIN:Bang('!SetOption', 'Cover', 'ImageName', '')
-    SKIN:Bang('!SetOption', 'Cover', 'ImageName', coverPath)
-    SKIN:Bang('!UpdateMeter', 'Cover')
+  if coverFile ~= lastCoverFile then
+    lastCoverFile = coverFile
+    SKIN:Bang('!SetVariable', 'NpCoverFile', coverFile)
   end
 
   local playing = (state == 1)

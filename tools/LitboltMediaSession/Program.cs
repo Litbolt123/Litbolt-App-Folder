@@ -53,13 +53,11 @@ static async Task WriteStateAsync(string dir)
 {
     Directory.CreateDirectory(dir);
     var statePath = Path.Combine(dir, "nowplaying.ini");
-    var coverPath = Path.Combine(dir, "cover.jpg");
-
     var session = await GetSessionAsync();
     if (session is null)
     {
         MediaState.LastTitle = null;
-        await WriteIniAsync(statePath, "", "", 0, 0, 0, 0, MediaState.CoverRev);
+        await WriteIniAsync(statePath, "", "", 0, 0, 0, 0, MediaState.CoverRev, MediaState.CoverFileName);
         return;
     }
 
@@ -79,7 +77,6 @@ static async Task WriteStateAsync(string dir)
         MediaState.LastCoverHash = 0;
     }
 
-    var coverWritten = false;
     if (props.Thumbnail is not null)
     {
         try
@@ -92,21 +89,21 @@ static async Task WriteStateAsync(string dir)
             var hash = HashCode.Combine(bytes.Length, bytes.AsSpan(0, Math.Min(64, bytes.Length)).GetHashCode());
             if (titleChanged || hash != MediaState.LastCoverHash)
             {
+                MediaState.CoverRev++;
+                MediaState.CoverFileName = $"cover-{MediaState.CoverRev}.jpg";
+                var coverPath = Path.Combine(dir, MediaState.CoverFileName);
                 var tmpCover = coverPath + ".tmp";
                 await File.WriteAllBytesAsync(tmpCover, bytes);
                 File.Move(tmpCover, coverPath, true);
                 MediaState.LastCoverHash = hash;
-                coverWritten = true;
+                PruneOldCovers(dir, MediaState.CoverFileName);
             }
         }
         catch
         {
-            // keep previous cover.jpg
+            // keep previous cover file
         }
     }
-
-    if (titleChanged || coverWritten)
-        MediaState.CoverRev++;
 
     await WriteIniAsync(
         statePath,
@@ -116,7 +113,25 @@ static async Task WriteStateAsync(string dir)
         position,
         duration,
         progress,
-        MediaState.CoverRev);
+        MediaState.CoverRev,
+        MediaState.CoverFileName);
+}
+
+static void PruneOldCovers(string dir, string keepFileName)
+{
+    try
+    {
+        foreach (var path in Directory.GetFiles(dir, "cover-*.jpg"))
+        {
+            if (Path.GetFileName(path).Equals(keepFileName, StringComparison.OrdinalIgnoreCase))
+                continue;
+            File.Delete(path);
+        }
+    }
+    catch
+    {
+        // ignore cleanup failures
+    }
 }
 
 static async Task WriteIniAsync(
@@ -127,7 +142,8 @@ static async Task WriteIniAsync(
     double position,
     double duration,
     double progress,
-    long coverRevision)
+    long coverRevision,
+    string coverFile)
 {
     var sb = new StringBuilder();
     sb.AppendLine("[Media]");
@@ -140,6 +156,7 @@ static async Task WriteIniAsync(
     sb.AppendLine($"PositionText={FormatTime(position)}");
     sb.AppendLine($"DurationText={FormatTime(duration)}");
     sb.AppendLine($"CoverRev={coverRevision}");
+    sb.AppendLine($"CoverFile={EscapeIni(coverFile)}");
     var tmp = statePath + ".tmp";
     await File.WriteAllTextAsync(tmp, sb.ToString(), Encoding.UTF8);
     File.Move(tmp, statePath, true);
@@ -199,6 +216,8 @@ static async Task WatchLoopAsync(string dir, CancellationToken ct)
     File.Delete(StopFlagPath(dir));
     MediaState.LastTitle = null;
     MediaState.CoverRev = 0;
+    MediaState.LastCoverHash = 0;
+    MediaState.CoverFileName = "cover.jpg";
 
     while (!ct.IsCancellationRequested)
     {
