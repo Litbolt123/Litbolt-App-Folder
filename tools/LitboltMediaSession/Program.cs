@@ -7,7 +7,7 @@ using Windows.Media.Control;
 using Windows.Storage.Streams;
 
 const string MutexName = @"Global\LitboltMediaSessionWatch";
-const int WatchIntervalMs = 500;
+const int WatchIntervalMs = 350;
 
 static string MediaDir()
 {
@@ -181,7 +181,6 @@ static async Task ProcessCommandFileAsync(string dir)
         return;
 
     await RunTransportAsync(line);
-    await Task.Delay(150);
     await WriteStateAsync(dir);
 }
 
@@ -304,12 +303,6 @@ static async Task<int> RunWatchAsync(string dir)
     return 0;
 }
 
-static async Task EnqueueCommandAsync(string dir, string verb)
-{
-    await File.WriteAllTextAsync(CommandPath(dir), verb.Trim(), Encoding.UTF8);
-    await Task.Delay(400);
-}
-
 var dir = MediaDir();
 var cmd = args.Length > 0 ? args[0].ToLowerInvariant() : "poll";
 
@@ -356,14 +349,8 @@ try
         case "next":
         case "previous":
         case "prev":
-            if (IsWatchProcessAlive(dir))
-                await EnqueueCommandAsync(dir, cmd);
-            else
-            {
-                await RunTransportAsync(cmd);
-                await WriteStateAsync(dir);
-            }
-
+            await RunTransportAsync(cmd);
+            await WriteStateAsync(dir);
             return 0;
         default:
             Console.Error.WriteLine("Usage: LitboltMediaSession [watch|stop|poll|playpause|next|previous]");
