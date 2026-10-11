@@ -80,9 +80,29 @@ static async Task WriteStateAsync(string dir)
     var title = props.Title ?? "";
     var artist = props.Artist ?? "";
 
+    if (!string.IsNullOrEmpty(MediaState.PendingSkipAnchor)
+        && string.Equals(title, MediaState.PendingSkipAnchor, StringComparison.Ordinal))
+    {
+        return;
+    }
+
+    if (!string.IsNullOrEmpty(MediaState.PendingSkipAnchor)
+        && !string.Equals(title, MediaState.PendingSkipAnchor, StringComparison.Ordinal))
+    {
+        MediaState.PendingSkipAnchor = null;
+    }
+
     var titleChanged = !string.Equals(MediaState.LastTitle, title, StringComparison.Ordinal);
     if (titleChanged)
     {
+        if (!string.IsNullOrEmpty(MediaState.PreviousTitle)
+            && string.Equals(title, MediaState.PreviousTitle, StringComparison.Ordinal)
+            && position < 20)
+        {
+            return;
+        }
+
+        MediaState.PreviousTitle = MediaState.LastTitle;
         MediaState.LastTitle = title;
         MediaState.LastCoverHash = 0;
     }
@@ -172,6 +192,26 @@ static async Task WriteIniAsync(
     var tmp = statePath + ".tmp";
     await File.WriteAllTextAsync(tmp, sb.ToString(), Encoding.UTF8);
     File.Move(tmp, statePath, true);
+}
+
+static bool IsSkipCommand(string verb) =>
+    verb is "next" or "previous" or "prev";
+
+static async Task WriteStateAfterSkipAsync(string dir)
+{
+    MediaStateStore.Load(dir);
+    for (var attempt = 0; attempt < 30; attempt++)
+    {
+        await Task.Delay(100);
+        await WriteStateAsync(dir);
+        MediaStateStore.Load(dir);
+        if (string.IsNullOrEmpty(MediaState.PendingSkipAnchor))
+            return;
+    }
+
+    MediaState.PendingSkipAnchor = null;
+    MediaStateStore.Save(dir);
+    await WriteStateAsync(dir);
 }
 
 static async Task<int> RunTransportAsync(string verb)
@@ -384,11 +424,17 @@ try
             await WriteStateAsync(dir);
             return 0;
         case "playpause":
+            await RunTransportAsync(cmd);
+            await WriteStateAsync(dir);
+            return 0;
         case "next":
         case "previous":
         case "prev":
+            MediaStateStore.Load(dir);
+            MediaState.PendingSkipAnchor = MediaState.LastTitle ?? "";
+            MediaStateStore.Save(dir);
             await RunTransportAsync(cmd);
-            await WriteStateAsync(dir);
+            await WriteStateAfterSkipAsync(dir);
             return 0;
         default:
             Console.Error.WriteLine("Usage: LitboltMediaSession [watch|stop|poll|playpause|next|previous]");

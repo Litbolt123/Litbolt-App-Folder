@@ -25,6 +25,9 @@ internal static class MediaStateStore
                 case "LastTitle":
                     MediaState.LastTitle = val;
                     break;
+                case "PreviousTitle":
+                    MediaState.PreviousTitle = string.IsNullOrEmpty(val) ? null : val;
+                    break;
                 case "CoverRev":
                     if (long.TryParse(val, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rev))
                         MediaState.CoverRev = rev;
@@ -36,6 +39,9 @@ internal static class MediaStateStore
                 case "CoverFileName":
                     if (!string.IsNullOrEmpty(val))
                         MediaState.CoverFileName = val;
+                    break;
+                case "PendingSkipAnchor":
+                    MediaState.PendingSkipAnchor = string.IsNullOrEmpty(val) ? null : val;
                     break;
             }
         }
@@ -49,9 +55,11 @@ internal static class MediaStateStore
         {
             "[State]",
             $"LastTitle={MediaState.LastTitle ?? ""}",
+            $"PreviousTitle={MediaState.PreviousTitle ?? ""}",
             $"CoverRev={MediaState.CoverRev.ToString(CultureInfo.InvariantCulture)}",
             $"LastCoverHash={MediaState.LastCoverHash.ToString(CultureInfo.InvariantCulture)}",
             $"CoverFileName={MediaState.CoverFileName}",
+            $"PendingSkipAnchor={MediaState.PendingSkipAnchor ?? ""}",
         };
         File.WriteAllLines(tmp, lines);
         File.Move(tmp, path, true);
