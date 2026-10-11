@@ -1,5 +1,6 @@
 local iniPath = ''
 local lastCoverRev = nil
+local lastTitle = nil
 
 local function trim(s)
   if not s then return '' end
@@ -72,8 +73,10 @@ function Update()
 
   local coverPath = mediaDir .. 'cover.jpg'
   SKIN:Bang('!SetVariable', 'NpCoverFile', coverPath)
-  if rev ~= lastCoverRev then
+  if rev ~= lastCoverRev or title ~= lastTitle then
     lastCoverRev = rev
+    lastTitle = title
+    SKIN:Bang('!SetOption', 'Cover', 'ImageName', '')
     SKIN:Bang('!SetOption', 'Cover', 'ImageName', coverPath)
     SKIN:Bang('!UpdateMeter', 'Cover')
   end

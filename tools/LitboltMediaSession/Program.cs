@@ -72,12 +72,14 @@ static async Task WriteStateAsync(string dir)
     var title = props.Title ?? "";
     var artist = props.Artist ?? "";
 
-    if (!string.Equals(MediaState.LastTitle, title, StringComparison.Ordinal))
+    var titleChanged = !string.Equals(MediaState.LastTitle, title, StringComparison.Ordinal);
+    if (titleChanged)
     {
         MediaState.LastTitle = title;
-        MediaState.CoverRev++;
+        MediaState.LastCoverHash = 0;
     }
 
+    var coverWritten = false;
     if (props.Thumbnail is not null)
     {
         try
@@ -87,14 +89,14 @@ static async Task WriteStateAsync(string dir)
             using var reader = new DataReader(stream);
             await reader.LoadAsync((uint)stream.Size);
             reader.ReadBytes(bytes);
-            var tmpCover = coverPath + ".tmp";
-            var hash = HashCode.Combine(bytes.Length, bytes.AsSpan(0, Math.Min(16, bytes.Length)).GetHashCode());
-            if (hash != MediaState.LastCoverHash)
+            var hash = HashCode.Combine(bytes.Length, bytes.AsSpan(0, Math.Min(64, bytes.Length)).GetHashCode());
+            if (titleChanged || hash != MediaState.LastCoverHash)
             {
+                var tmpCover = coverPath + ".tmp";
                 await File.WriteAllBytesAsync(tmpCover, bytes);
                 File.Move(tmpCover, coverPath, true);
                 MediaState.LastCoverHash = hash;
-                MediaState.CoverRev++;
+                coverWritten = true;
             }
         }
         catch
@@ -102,6 +104,9 @@ static async Task WriteStateAsync(string dir)
             // keep previous cover.jpg
         }
     }
+
+    if (titleChanged || coverWritten)
+        MediaState.CoverRev++;
 
     await WriteIniAsync(
         statePath,
