@@ -1,4 +1,5 @@
 local iniPath = ''
+local lastCoverRev = nil
 
 local function trim(s)
   if not s then return '' end
@@ -68,7 +69,14 @@ function Update()
   SKIN:Bang('!SetVariable', 'NpState', tostring(state))
   SKIN:Bang('!SetVariable', 'NpProgress', progress)
   SKIN:Bang('!SetVariable', 'NpTime', posText .. ' / ' .. durText)
-  SKIN:Bang('!SetVariable', 'NpCoverFile', mediaDir .. 'cover.jpg?' .. rev)
+
+  local coverPath = mediaDir .. 'cover.jpg'
+  SKIN:Bang('!SetVariable', 'NpCoverFile', coverPath)
+  if rev ~= lastCoverRev then
+    lastCoverRev = rev
+    SKIN:Bang('!SetOption', 'Cover', 'ImageName', coverPath)
+    SKIN:Bang('!UpdateMeter', 'Cover')
+  end
 
   local playing = (state == 1)
   if playing then

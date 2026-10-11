@@ -88,9 +88,14 @@ static async Task WriteStateAsync(string dir)
             await reader.LoadAsync((uint)stream.Size);
             reader.ReadBytes(bytes);
             var tmpCover = coverPath + ".tmp";
-            await File.WriteAllBytesAsync(tmpCover, bytes);
-            File.Move(tmpCover, coverPath, true);
-            MediaState.CoverRev++;
+            var hash = HashCode.Combine(bytes.Length, bytes.AsSpan(0, Math.Min(16, bytes.Length)).GetHashCode());
+            if (hash != MediaState.LastCoverHash)
+            {
+                await File.WriteAllBytesAsync(tmpCover, bytes);
+                File.Move(tmpCover, coverPath, true);
+                MediaState.LastCoverHash = hash;
+                MediaState.CoverRev++;
+            }
         }
         catch
         {
