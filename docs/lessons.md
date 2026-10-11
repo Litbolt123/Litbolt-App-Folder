@@ -39,6 +39,14 @@ Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 - **Verify:** Spotify playing or paused → title/artist/art within 1–2 s; prev/play/next work; song change bumps cover cache.
 - **Do not regress:** Do not use `#CURRENTPATH#@Resources` or `@Include` `.inc` for live data; do not `!Refresh` the whole skin on a timer.
 
+## Rainmeter Now Playing — watch killed on skin refresh
+
+- **Symptom:** `nowplaying.ini` goes blank after refreshing the Now Playing skin; transport dies.
+- **Failed:** `OnCloseAction` → `stop` on skin unload (runs on refresh before `OnRefreshAction`); `Measure=Run` (invalid on Rainmeter 4.5 — log: *Measure=Run is not valid*).
+- **Worked:** Remove skin `OnCloseAction`; watch loop exits when **no `Rainmeter.exe`** process; `watch` no-ops if `watch.pid` process alive; skin uses **`Plugin=RunCommand`**; logon task `Litbolt\MediaWatchBootstrap` runs `ensure-media-watch.ps1`.
+- **Verify:** Refresh skin 5× — same `watch.pid`, title stays populated; quit Rainmeter — watch exits; sign-in + Rainmeter → bootstrap starts watch.
+- **Do not regress:** No `OnCloseAction` stop on Now Playing; use RunCommand not Measure=Run.
+
 ## PowerShell feeder scripts — Unicode em dash on Windows
 
 - **Symptom:** `today-feed.ps1` fails to parse with “Unexpected token” near countdown strings.

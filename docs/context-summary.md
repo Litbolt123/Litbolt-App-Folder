@@ -172,6 +172,12 @@
 - **Ask:** Redesign Widget tab — fixed left rail (preview, actions, look, on/off), scrollable right (featured chips, pairs, pinned/hidden strips), sticky apply bar with pending count; 1366×768; screenshot + Release + commit.
 - **Done:** `PageWidget` outside `TabScrollHost`; pending changes for featured/pairs + ini sliders; **Apply changes to widget** saves, writes ini, runs Update-FeaturedPhotos; Next photo bang; illustro in Expander.
 
+## 2026-10-10 — Now Playing watch survives skin refresh
+
+- **Ask:** Stop killing watch on skin refresh; start at logon if Rainmeter running; test 5× refresh + reboot path; commit.
+- **Cause:** `OnCloseAction` + `stop` raced refresh; stale `watch.pid`; `Measure=Run` invalid (needed RunCommand).
+- **Done:** Watch exits only when Rainmeter exits; alive PID check; RunCommand; `MediaWatchBootstrap` logon task; 5× refresh test same pid.
+
 ## 2026-10-10 — Litbolt Now Playing fix (#@# paths + watch + Lua)
 
 - **Ask:** Card showed literal `#NpTitle#` etc.; fix paths, live updates without `!Refresh` loop, controls, MDL2 icons, test Spotify, commit.

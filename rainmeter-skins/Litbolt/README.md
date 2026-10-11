@@ -58,6 +58,7 @@ Event name | 2026-10-12 10:00
 - **Spotify desktop (and other GSMTC apps):** Uses Windows **GlobalSystemMediaTransportControls** via `@Resources\LitboltMedia\LitboltMediaSession.exe` (skin config `Litbolt\Now Playing` → `#@#` is `Skins\Litbolt\@Resources\`). Background `watch` process writes `nowplaying.ini`; the skin reads it with Lua every 1 s (no full-skin `!Refresh` loop).
 - **Build helper:** `dotnet publish tools\LitboltMediaSession\LitboltMediaSession.csproj -c Release -o "%USERPROFILE%\Rainmeter\Skins\Litbolt\@Resources\LitboltMedia"` (install script does this automatically).
 - **Requires:** .NET 8 runtime on the PC. No browser extension needed for desktop Spotify.
+- **Watch process:** Survives Now Playing skin refresh; exits when Rainmeter quits. Logon task `Litbolt\MediaWatchBootstrap` (install script or `feeders\register-tasks.ps1`) starts watch ~1 min after sign-in if Rainmeter is already running.
 
 ## 6. Market
 

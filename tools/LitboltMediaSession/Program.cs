@@ -199,6 +199,9 @@ static async Task WatchLoopAsync(string dir, CancellationToken ct)
             break;
         }
 
+        if (!IsAnyRainmeterRunning())
+            break;
+
         await ProcessCommandFileAsync(dir);
         await WriteStateAsync(dir);
         try
@@ -229,7 +232,50 @@ static bool TryAcquireWatchMutex()
 
 static string WatchPidPath(string dir) => Path.Combine(dir, "watch.pid");
 
-static bool IsWatchRunning(string dir) => File.Exists(WatchPidPath(dir));
+static void DeleteStalePidFile(string dir)
+{
+    try
+    {
+        File.Delete(WatchPidPath(dir));
+    }
+    catch
+    {
+        // ignore
+    }
+}
+
+static bool IsWatchProcessAlive(string dir)
+{
+    var pidPath = WatchPidPath(dir);
+    if (!File.Exists(pidPath))
+        return false;
+
+    if (!int.TryParse(File.ReadAllText(pidPath).Trim(), out var pid))
+    {
+        DeleteStalePidFile(dir);
+        return false;
+    }
+
+    try
+    {
+        using var proc = Process.GetProcessById(pid);
+        if (proc.HasExited)
+        {
+            DeleteStalePidFile(dir);
+            return false;
+        }
+
+        return proc.ProcessName.Equals("LitboltMediaSession", StringComparison.OrdinalIgnoreCase);
+    }
+    catch
+    {
+        DeleteStalePidFile(dir);
+        return false;
+    }
+}
+
+static bool IsAnyRainmeterRunning() =>
+    Process.GetProcessesByName("Rainmeter").Length > 0;
 
 static async Task<int> RunWatchAsync(string dir)
 {
@@ -272,7 +318,8 @@ try
     switch (cmd)
     {
         case "watch":
-            if (IsWatchRunning(dir))
+        case "ensure-watch":
+            if (IsWatchProcessAlive(dir))
                 return 0;
 
             var exe = Environment.ProcessPath ?? Path.Combine(dir, "LitboltMediaSession.exe");
@@ -309,7 +356,7 @@ try
         case "next":
         case "previous":
         case "prev":
-            if (IsWatchRunning(dir))
+            if (IsWatchProcessAlive(dir))
                 await EnqueueCommandAsync(dir, cmd);
             else
             {
