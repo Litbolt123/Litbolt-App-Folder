@@ -1,6 +1,6 @@
 # Litbolt Rainmeter widgets
 
-Four desktop widgets matching Photo Hub / Photo Widget styling (`#12141A` background, `#E8A04A` gold accent, Segoe UI). Skins only read files under each widget's `@Resources` folder; feeders write `.inc` data on a schedule.
+Five desktop widgets matching Photo Hub / Photo Widget styling (`#12141A` background, `#E8A04A` gold accent, Segoe UI). Skins only read files under each widget's `@Resources` folder; feeders write `.inc` data on a schedule.
 
 **Do not edit Photo Widget** — these live under `Rainmeter\Skins\Litbolt\` only.
 
@@ -10,7 +10,7 @@ Four desktop widgets matching Photo Hub / Photo Widget styling (`#12141A` backgr
 
 1. Right-click the Rainmeter tray icon → **Manage**.
 2. Open the **Skins** tab → **Litbolt**.
-3. Check or uncheck the `.ini` for **Helios Health**, **Today**, **Litbolt Stats**, or **Market**.
+3. Check or uncheck the `.ini` for **Helios Health**, **Today**, **Litbolt Stats**, **Market**, or **Now Playing**.
 
 **Photo Hub**
 
@@ -53,12 +53,18 @@ Event name | 2026-10-12 10:00
 - **Feeder:** `feeders\stats-feed.ps1` (download counts + delta vs previous day in `stats-history.json`).
 - **Schedule:** **Litbolt\StatsFeed** every 3 hours.
 
-## 5. Market
+## 5. Now Playing
+
+- **Spotify desktop (and other GSMTC apps):** Uses Windows **GlobalSystemMediaTransportControls** via `@Resources\LitboltMedia\LitboltMediaSession.exe` (skin config `Litbolt\Now Playing` → `#@#` is `Skins\Litbolt\@Resources\`). Background `watch` process writes `nowplaying.ini`; the skin reads it with Lua every 1 s (no full-skin `!Refresh` loop).
+- **Build helper:** `dotnet publish tools\LitboltMediaSession\LitboltMediaSession.csproj -c Release -o "%USERPROFILE%\Rainmeter\Skins\Litbolt\@Resources\LitboltMedia"` (install script does this automatically).
+- **Requires:** .NET 8 runtime on the PC. No browser extension needed for desktop Spotify.
+
+## 6. Market
 
 - **Feeder:** `feeders\market-feed-gated.ps1` (calls `market-feed.ps1`) — MU, SNDK, BTC-USD via Yahoo's public chart endpoint; green/red for day change.
 - **Schedule:** **Litbolt\MarketFeed** every 5 minutes; script throttles to 30 minutes outside 09:00–16:59 local.
 
-## 6. Scheduled tasks (feeders)
+## 7. Scheduled tasks (feeders)
 
 From an **elevated** PowerShell:
 
@@ -83,7 +89,7 @@ Unregister:
 
 Tasks run hidden PowerShell at **BelowNormal** priority inside each script.
 
-## 7. Install / update from repo
+## 8. Install / update from repo
 
 Canonical copy in the Litbolt App Folder repo: `rainmeter-skins\Litbolt\`.  
 To refresh Rainmeter's copy:
@@ -92,7 +98,7 @@ To refresh Rainmeter's copy:
 & "C:\Users\Augus\Projects\Litbolt App Folder\scripts\install-litbolt-rainmeter-skins.ps1"
 ```
 
-## 8. File map
+## 9. File map
 
 | Widget | Skin ini | Data |
 |--------|----------|------|

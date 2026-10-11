@@ -160,6 +160,7 @@
 
 - **Ask:** Fix clipped rows and scroll stopping at ~24 of 70+ people.
 - **Done:** Replaced `VirtualizingWrapPanel` with plain `WrapPanel`, `IsVirtualizing=False`, fixed 170px card height; removed panel class; thumbs still async via `PersonFaceImage`.
+- **Playtest 2026-10-10:** August — People scroll/clipping fixed.
 
 ## 2026-10-10 — Photo Hub all tabs: sticky bars + scroll regions
 
@@ -170,6 +171,19 @@
 
 - **Ask:** Redesign Widget tab — fixed left rail (preview, actions, look, on/off), scrollable right (featured chips, pairs, pinned/hidden strips), sticky apply bar with pending count; 1366×768; screenshot + Release + commit.
 - **Done:** `PageWidget` outside `TabScrollHost`; pending changes for featured/pairs + ini sliders; **Apply changes to widget** saves, writes ini, runs Update-FeaturedPhotos; Next photo bang; illustro in Expander.
+
+## 2026-10-10 — Litbolt Now Playing fix (#@# paths + watch + Lua)
+
+- **Ask:** Card showed literal `#NpTitle#` etc.; fix paths, live updates without `!Refresh` loop, controls, MDL2 icons, test Spotify, commit.
+- **Cause:** Config `Litbolt\Now Playing` → `#@#` = `Skins\Litbolt\@Resources\`, not `Now Playing\@Resources`; `@Include` `.inc` never loaded; poll+`!Refresh` was wrong pattern.
+- **Done:** Helper + `nowplaying.ini` + Lua in `@Resources\LitboltMedia\`; `watch-loop` single background process; transport + `CoverRev` cache bust; Segoe MDL2 icons; playtest skip/pause OK.
+
+## 2026-10-10 — Litbolt Now Playing (GSMTC, not WebNowPlaying)
+
+- **Ask:** Debug WebNowPlaying + Spotify desktop on `Litbolt\Now Playing`; logging; alpha.4 vs .5; keep card look; don't touch other skins.
+- **Tried:** `Logging=1` + `Debug=1`, restart via explorer; log shows plugin load only (no WNP errors). `PlayerId="active"` matches WebNowPlayer example; alpha.5 swap prepared (134 KB vs 1 MB DLL sizes).
+- **Cause:** WebNowPlaying lists desktop Spotify but does not supply title/artist/cover/transport here; Windows GSMTC returns full metadata for same session.
+- **Done:** `tools/LitboltMediaSession` + skin rewrite (Run measure poll); backup `Now Playing.ini.bak-2026-10-10`; restored WebNowPlaying **alpha.4** in Plugins; repo `rainmeter-skins/Litbolt/Now Playing/`.
 
 ## 2026-10-10 — Helios Health: HWiNFO Gadget registry
 

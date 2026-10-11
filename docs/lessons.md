@@ -20,7 +20,7 @@ Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 - **Symptom:** Top rows clip while scrolling; scrollbar stops after ~24 people with empty space below (70+ folders on disk).
 - **Failed:** Custom `VirtualizingWrapPanel` with `ItemHeight=172` while `ListBoxItem` also has `Margin 0,0,8,8` (row pitch mismatch); fragile `IScrollInfo` / generator remove.
 - **Worked:** Non-virtualized `WrapPanel` + `VirtualizingPanel.IsVirtualizing=False` (~100 people OK); fixed `Height=170` on items; `PersonFaceImage` async thumbs unchanged.
-- **Verify:** Scroll People from first card through **Zion Walsman** (last alphabetically); full scrollbar range, no clipped row tops.
+- **Verify:** Scroll People from first card through **Zion Walsman** (last alphabetically); full scrollbar range, no clipped row tops. **Playtest 2026-10-10:** August confirmed fixed.
 - **Do not regress:** Do not re-enable custom virtualizing wrap without matching item height + margin to panel line pitch.
 
 ## Face-groups photo count — face_* only folders
@@ -30,6 +30,14 @@ Also read `GitHub projects\docs\app-development-pipeline.md` section 10.
 - **Worked:** `CountPhotosInPersonFolder` — prefer full-image count; if zero, count `face_` / `_face_` crops. Thumbnail picks face crop first.
 - **Verify:** `BC` under `_face-groups` with only `face_1.jpg`…`face_6.jpg` shows **6 photos**.
 - **Do not regress:** `FaceGroupsService.ListPeople`.
+
+## Rainmeter Now Playing — WebNowPlaying vs Spotify desktop
+
+- **Symptom:** WebNowPlayer shows **Active 1 / Spotify** but Title, Artist, Cover, State, and transport are empty; `PlayerId="active"` matches the example skin; Rainmeter.log has **no** WebNowPlaying errors with `Logging=1` / `Debug=1`.
+- **Failed:** Assuming `PlayerId` must be numeric from `GetPlayerIds()` — same empty metadata with `"active"` and numeric id; WebNowPlaying **alpha.4** (134 KB DLL) left in place (alpha.5 is ~1 MB backup; swap untested in UI this session).
+- **Worked:** **GSMTC** helper in `Skins\Litbolt\@Resources\LitboltMedia\` (not `Now Playing\@Resources` — `#@#` is the Litbolt skin root); `watch-loop` background process writes `nowplaying.ini`; Lua `nowplaying.lua` reads every 1 s with `DynamicVariables`; transport via quoted `HelperExe`; cover `cover.jpg?CoverRev`; Segoe MDL2 transport icons.
+- **Verify:** Spotify playing or paused → title/artist/art within 1–2 s; prev/play/next work; song change bumps cover cache.
+- **Do not regress:** Do not use `#CURRENTPATH#@Resources` or `@Include` `.inc` for live data; do not `!Refresh` the whole skin on a timer.
 
 ## PowerShell feeder scripts — Unicode em dash on Windows
 
