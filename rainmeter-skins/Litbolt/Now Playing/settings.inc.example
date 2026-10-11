@@ -1,0 +1,3 @@
+; Copy to settings.inc to persist pin state (created automatically when you use the pin).
+[Variables]
+StayOnTop=0

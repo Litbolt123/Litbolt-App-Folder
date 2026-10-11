@@ -19,8 +19,32 @@ local function readIni(path)
   return data
 end
 
+local function applyStayOnTop()
+  local ontop = tonumber(SKIN:GetVariable('StayOnTop')) or 0
+  if ontop == 1 then
+    SKIN:Bang('!ZPos', 'OnTop')
+    SKIN:Bang('!SetOption', 'MeterPin', 'FontColor', SKIN:GetVariable('Accent'))
+  else
+    SKIN:Bang('!ZPos', 'Normal')
+    SKIN:Bang('!SetOption', 'MeterPin', 'FontColor', '150,150,160')
+  end
+end
+
 function Initialize()
   iniPath = SKIN:GetVariable('NowPlayingIni')
+  applyStayOnTop()
+end
+
+function TogglePin()
+  local ontop = tonumber(SKIN:GetVariable('StayOnTop')) or 0
+  local nextVal = 1 - ontop
+  local settingsFile = SKIN:GetVariable('SettingsFile')
+  local settingsPath = SKIN:GetVariable('SettingsPath')
+  SKIN:Bang('!SetVariable', 'StayOnTop', tostring(nextVal))
+  SKIN:Bang('!WriteKeyValue', 'Variables', 'StayOnTop', tostring(nextVal), settingsFile)
+  SKIN:Bang('!WriteKeyValue', 'Litbolt\\Now Playing', 'AlwaysOnTop', tostring(nextVal), settingsPath)
+  applyStayOnTop()
+  SKIN:Bang('!Redraw')
 end
 
 function Update()

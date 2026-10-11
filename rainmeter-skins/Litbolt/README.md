@@ -59,6 +59,7 @@ Event name | 2026-10-12 10:00
 - **Build helper:** `dotnet publish tools\LitboltMediaSession\LitboltMediaSession.csproj -c Release -o "%USERPROFILE%\Rainmeter\Skins\Litbolt\@Resources\LitboltMedia"` (install script does this automatically).
 - **Requires:** .NET 8 runtime on the PC. No browser extension needed for desktop Spotify.
 - **Watch process:** Survives Now Playing skin refresh; exits when Rainmeter quits. Logon task `Litbolt\MediaWatchBootstrap` (install script or `feeders\register-tasks.ps1`) starts watch ~1 min after sign-in if Rainmeter is already running.
+- **Always on top:** Pin icon (top-right) toggles `StayOnTop` (saved in `Now Playing\settings.inc` + Rainmeter.ini). Default on until you turn it off.
 
 ## 6. Market
 
