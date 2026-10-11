@@ -4,5 +4,6 @@ nowplaying.ini
 watch.pid
 watch.stop
 command.txt
+media-state.ini
 *.pdb
 LitboltMediaSession.exe

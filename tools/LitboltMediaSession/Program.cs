@@ -39,6 +39,15 @@ static int PlaybackState(GlobalSystemMediaTransportControlsSessionPlaybackInfo i
 static string EscapeIni(string value) =>
     value.Replace("\r", " ").Replace("\n", " ").Trim();
 
+static long ComputeCoverHash(byte[] bytes)
+{
+    long hash = bytes.Length;
+    var limit = Math.Min(bytes.Length, 256);
+    for (var i = 0; i < limit; i++)
+        hash = (hash * 31) + bytes[i];
+    return hash;
+}
+
 static string FormatTime(double totalSeconds)
 {
     if (totalSeconds < 0 || double.IsNaN(totalSeconds) || double.IsInfinity(totalSeconds))
@@ -52,6 +61,7 @@ static string FormatTime(double totalSeconds)
 static async Task WriteStateAsync(string dir)
 {
     Directory.CreateDirectory(dir);
+    MediaStateStore.Load(dir);
     var statePath = Path.Combine(dir, "nowplaying.ini");
     var session = await GetSessionAsync();
     if (session is null)
@@ -86,7 +96,7 @@ static async Task WriteStateAsync(string dir)
             using var reader = new DataReader(stream);
             await reader.LoadAsync((uint)stream.Size);
             reader.ReadBytes(bytes);
-            var hash = HashCode.Combine(bytes.Length, bytes.AsSpan(0, Math.Min(64, bytes.Length)).GetHashCode());
+            var hash = ComputeCoverHash(bytes);
             if (titleChanged || hash != MediaState.LastCoverHash)
             {
                 MediaState.CoverRev++;
@@ -115,6 +125,8 @@ static async Task WriteStateAsync(string dir)
         progress,
         MediaState.CoverRev,
         MediaState.CoverFileName);
+
+    MediaStateStore.Save(dir);
 }
 
 static void PruneOldCovers(string dir, string keepFileName)
@@ -214,10 +226,7 @@ static async Task ProcessCommandFileAsync(string dir)
 static async Task WatchLoopAsync(string dir, CancellationToken ct)
 {
     File.Delete(StopFlagPath(dir));
-    MediaState.LastTitle = null;
-    MediaState.CoverRev = 0;
-    MediaState.LastCoverHash = 0;
-    MediaState.CoverFileName = "cover.jpg";
+    MediaStateStore.Load(dir);
 
     while (!ct.IsCancellationRequested)
     {
