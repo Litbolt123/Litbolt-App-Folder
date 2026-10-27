@@ -208,34 +208,32 @@ internal static class TransportPending
             return;
 
         var head = Skips.Peek();
+        var label = head.Verb == "next" ? "Next" : "Previous";
+        var desktop = await SpotifyPlaybackCoordinator.ReadSpotifyDesktopAsync();
         if (!head.Sent)
         {
-            head.Baseline = MediaState.SpotifyGsmtcObservedTitle ?? MediaState.LastWrittenTitle ?? "";
             head.Started = DateTime.UtcNow;
-            var action = head.Verb == "next" ? "Next" : "Previous";
-            SpotifyPlaybackCoordinator.NoteLocalSkip();
-            CommandLog.Write(dir, "send", action + " " + Since(head.Tick));
-            if (await SpotifyPlaybackCoordinator.SpotifySessionPresentAsync())
-                await SpotifyPlaybackCoordinator.TransportViaSpotifySessionAsync(head.Verb);
-            else if (SpotifyTokenStore.HasRefreshToken() && !DebugOffline.IsOn())
+            var blocked = SkipBlockReason(desktop);
+            if (blocked is not null)
             {
-                using var apiCt = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-                await SpotifyApiClient.TransportAsync(head.Verb, apiCt.Token);
+                CommandLog.Write(dir, "confirm", label + " failed " + blocked);
+                Skips.Dequeue();
+                return;
             }
 
+            head.Baseline = desktop.Title;
+            SpotifyPlaybackCoordinator.NoteLocalSkip();
+            CommandLog.Write(dir, "send", label + " " + Since(head.Tick));
+            await SpotifyPlaybackCoordinator.TransportViaSpotifySessionAsync(head.Verb);
             head.Sent = true;
             head.LastSend = DateTime.UtcNow;
             return;
         }
 
-        if ((DateTime.UtcNow - head.LastSend).TotalMilliseconds < 500)
+        if ((DateTime.UtcNow - head.LastSend).TotalMilliseconds < 400)
             return;
 
-        var title = MediaState.SpotifyGsmtcObservedTitle ?? "";
-        var read = await SpotifyPlaybackCoordinator.ReadSpotifyTitleAsync();
-        if (!string.IsNullOrWhiteSpace(read))
-            title = read;
-        var label = head.Verb == "next" ? "Next" : "Previous";
+        var title = desktop.Title;
         if (!string.IsNullOrWhiteSpace(title)
             && !string.Equals(title, head.Baseline, StringComparison.Ordinal))
         {
@@ -246,16 +244,22 @@ internal static class TransportPending
             return;
         }
 
-        if (DateTime.UtcNow >= head.Started.AddSeconds(15))
-        {
-            CommandLog.Write(dir, "confirm", label + " timeout " + title + " " + Since(head.Tick));
-            Skips.Dequeue();
-            return;
-        }
+        var why = string.IsNullOrWhiteSpace(title) ? "blank title" : "unchanged";
+        CommandLog.Write(dir, "confirm", label + " failed " + why);
+        Skips.Dequeue();
+    }
 
-        CommandLog.Write(dir, "send", label + " retry " + Since(head.Tick));
-        await SpotifyPlaybackCoordinator.TransportViaSpotifySessionAsync(head.Verb);
-        head.LastSend = DateTime.UtcNow;
+    private static string? SkipBlockReason(SpotifyPlaybackCoordinator.SpotifyDesktop desktop)
+    {
+        var webapiPaused = string.Equals(MediaState.CommittedPlaybackSource, "webapi", StringComparison.OrdinalIgnoreCase)
+            && MediaState.LastWrittenPlaybackState == 2;
+        if (!desktop.Present)
+            return webapiPaused ? "paused webapi" : "no Spotify desktop";
+        if (string.IsNullOrWhiteSpace(desktop.Title))
+            return "blank title";
+        if (desktop.Raw != 4)
+            return webapiPaused ? "paused webapi" : "paused";
+        return null;
     }
 
     private static async Task PumpSeekAsync(string dir)

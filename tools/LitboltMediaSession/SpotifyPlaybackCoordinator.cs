@@ -695,7 +695,9 @@ internal static class SpotifyPlaybackCoordinator
         MediaState.LastWrittenPositionMs = positionMs;
     }
 
-    public static async Task<bool> SpotifySessionPresentAsync()
+    public readonly record struct SpotifyDesktop(bool Present, int Raw, string Title);
+
+    public static async Task<SpotifyDesktop> ReadSpotifyDesktopAsync()
     {
         try
         {
@@ -703,15 +705,19 @@ internal static class SpotifyPlaybackCoordinator
             foreach (var session in mgr.GetSessions())
             {
                 var id = session.SourceAppUserModelId ?? "";
-                if (id.Contains("Spotify", StringComparison.OrdinalIgnoreCase))
-                    return true;
+                if (!id.Contains("Spotify", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var raw = (int)session.GetPlaybackInfo().PlaybackStatus;
+                var props = await session.TryGetMediaPropertiesAsync();
+                return new SpotifyDesktop(true, raw, props?.Title ?? "");
             }
         }
         catch
         {
         }
 
-        return false;
+        return new SpotifyDesktop(false, 0, "");
     }
 
     public static async Task<bool> TransportViaSpotifySessionAsync(string verb)
