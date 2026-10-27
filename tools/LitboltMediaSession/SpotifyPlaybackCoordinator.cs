@@ -695,6 +695,25 @@ internal static class SpotifyPlaybackCoordinator
         MediaState.LastWrittenPositionMs = positionMs;
     }
 
+    public static async Task<bool> SpotifySessionPresentAsync()
+    {
+        try
+        {
+            var mgr = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+            foreach (var session in mgr.GetSessions())
+            {
+                var id = session.SourceAppUserModelId ?? "";
+                if (id.Contains("Spotify", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+        }
+        catch
+        {
+        }
+
+        return false;
+    }
+
     public static async Task<bool> TransportViaSpotifySessionAsync(string verb)
     {
         try
